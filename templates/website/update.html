@@ -1,0 +1,18 @@
+{% extends "website/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+    {% if user.is_authenticated %}
+        <h3>Bine ai venit, {{ request.user|title }} !</h3>
+        Momentan nu ai inregistrat niciun pacient. Incepe acum !<br><br>
+
+        <form action='.' method='POST'>
+            {% csrf_token %}
+            {{ form|crispy }}
+            <input type='submit' value='Save'/>
+        </form>
+    {% else %}
+        <p>Nu esti logat ! Pentru a te loga, apasa pe link-ul de mai jos</p>
+        <a href="{% url 'tutorial:website_loginPage' %}">login</a>
+    {% endif %}
+{% endblock content %}
+

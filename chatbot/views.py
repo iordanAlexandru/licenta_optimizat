@@ -9,6 +9,10 @@ import wolframalpha  # to calculate strings into formula, its a website which pr
 from selenium import webdriver  # to control browser operations
 
 
+
+
+
+
 # Create your views here.
 
 def home(request):

@@ -2,11 +2,13 @@
 {% load crispy_forms_tags %}
 {% block content %}
     {% if user.is_authenticated %}
-        <h3>Bine ai venit, {{ request.user|title }} !</h3>
+        <h3>Bine ai venit, {{ request.user.username|title }} !</h3>
         Momentan nu ai inregistrat niciun pacient. Incepe acum !<br><br>
 
         <form action='.' method='POST'>
             {% csrf_token %}
+
+            {{ form_user|crispy }}
             {{ form|crispy }}
             <input type='submit' value='Save'/>
         </form>

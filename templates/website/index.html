@@ -87,7 +87,7 @@
             </div>
         </div>
     {% if user.is_authenticated %}
-    <span class = "hello-msg">Buna, {{ request.user }}! </span>
+    <span class = "hello-msg">Buna, {{ request.user.username }}! </span>
     <span><a  class = "hello-msg" href="{% url 'tutorial:website_logoutPage' %}">Logout</a></span>
     {% endif %}
     </nav>

@@ -31,24 +31,18 @@ selectie_boli= [
 
 
 class PacientForm(forms.ModelForm):
-    nume = forms.CharField(label='Nume:')
-    prenume = forms.CharField(label='Prenume:')
     varsta = forms.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
     afectiune = forms.CharField(label='Afectiune:', widget=forms.Select(choices=selectie_boli))
     vaduv = forms.BooleanField(label='Vaduv:', required = False)
-    parola_pacient = forms.CharField(label='Parola cont pacient:', widget=forms.PasswordInput)
     tel_urgenta = forms.CharField(max_length=10, validators=[RegexValidator(r'^\d{0,10}$')])
 
 
     class Meta:
         model = Pacient
         fields = [
-            'nume',
-            'prenume',
             'varsta',
             'afectiune',
             'vaduv',
-            'parola_pacient',
             'tel_urgenta',
         ]
 
@@ -71,6 +65,7 @@ alegere_dorinta= [
 
 
 class GeneralForm(forms.ModelForm):
+
     activitate = forms.CharField(label='Care este stilul tau de viata?',
                                      widget=forms.Select(choices=alegere_stil_viata))
     dorinta = forms.CharField(label='Ce-ti doresti cel mai mult acum?',
@@ -89,16 +84,20 @@ class GeneralForm(forms.ModelForm):
 
 
 class DiabetesForm(forms.ModelForm):
+    stare = forms.IntegerField(label='Pe o scara de la 1-100 cat de bine te simti astazi?',
+                               widget=forms.NumberInput(attrs={'type': 'range', 'step': '2'}))
+
     dulciuri = forms.BooleanField(label='Obisnuiau sa iti placa dulciurile?',
                                      widget=forms.Select(choices=alegere_stil_viata))
     sport = forms.BooleanField(label='faci sport?',
                                      widget=forms.Select(choices=alegere_dorinta))
     dieta = forms.BooleanField(label='Ai o dieta echilibrata?',
                                      widget=forms.Select(choices=alegere_fire))
-    nr_vizite_doctor = forms.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(10)])
+    nr_vizite_doctor = forms.IntegerField(label='Cate vizite la doctor faci pe an?', validators=[MinValueValidator(0), MaxValueValidator(10)])
     class Meta:
         model = Pacient
         fields = [
+            'stare',
             'dulciuri',
             'sport',
             'nr_vizite_doctor'
@@ -106,29 +105,57 @@ class DiabetesForm(forms.ModelForm):
 
 
 class AlzheimerForm(forms.ModelForm):
-    dulciuri = forms.BooleanField(label='Esti o fire organizata?',
+    stare = forms.IntegerField(label='Pe o scara de la 1-100 cat de bine te simti astazi?',
+                               widget=forms.NumberInput(attrs={'type': 'range', 'step': '2'}))
+    organizat = forms.BooleanField(label='Esti o fire organizata?',
                                      widget=forms.Select(choices=alegere_stil_viata))
-    sport = forms.BooleanField(label='De obicei dormi des?',
+    somn = forms.BooleanField(label='De obicei dormi des?',
                                      widget=forms.Select(choices=alegere_dorinta))
-    dieta = forms.BooleanField(label='Atentia iti e distrasa usor?',
+    atentie = forms.BooleanField(label='Atentia iti e distrasa usor?',
                                      widget=forms.Select(choices=alegere_fire))
-
+    class Meta:
+        model = Pacient
+        fields = [
+            'stare',
+            'organizat',
+            'somn',
+            'atentie'
+        ]
 
 
 class DementiaForm(forms.ModelForm):
-    dulciuri = forms.BooleanField(label='Esti apreciat din cei din jur?',
+    stare = forms.IntegerField(label='Pe o scara de la 1-100 cat de bine te simti astazi?',
+                               widget=forms.NumberInput(attrs={'type': 'range', 'step': '2'}))
+    apreciat = forms.BooleanField(label='Esti apreciat din cei din jur?',
                                      widget=forms.Select(choices=alegere_stil_viata))
-    sport = forms.BooleanField(label='Esti o fire altruista?',
+    altruist = forms.BooleanField(label='Esti o fire altruista?',
                                      widget=forms.Select(choices=alegere_dorinta))
-    dieta = forms.BooleanField(label='Ai deseori o stare confuza?',
+    confuz = forms.BooleanField(label='Ai deseori o stare confuza?',
                                      widget=forms.Select(choices=alegere_fire))
+    class Meta:
+        model = Pacient
+        fields = [
+            'stare',
+            'apreciat',
+            'altruist',
+            'confuz'
+        ]
 
 
 class DepressionForm(forms.ModelForm):
-    dulciuri = forms.BooleanField(label='Esti o fire organizata?',
+    stare = forms.IntegerField(label='Pe o scara de la 1-100 cat de bine te simti astazi?',
+                               widget=forms.NumberInput(attrs={'type': 'range', 'step': '2'}))
+    organizat = forms.BooleanField(label='Esti o fire organizata?',
                                      widget=forms.Select(choices=alegere_stil_viata))
-    sport = forms.BooleanField(label='Iti place sa vizionezi filme?',
+    filme = forms.BooleanField(label='Iti place sa vizionezi filme?',
                                      widget=forms.Select(choices=alegere_dorinta))
-    dieta = forms.BooleanField(label='Ti-ar placea sa te implici in diverse activitati?',
+    activ = forms.BooleanField(label='Ti-ar placea sa te implici in diverse activitati?',
                                      widget=forms.Select(choices=alegere_fire))
-
+    class Meta:
+        model = Pacient
+        fields = [
+            'stare',
+            'organizat',
+            'filme',
+            'activ'
+        ]

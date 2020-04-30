@@ -8,7 +8,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.models import User
 from .decorators import restrict_unauthenticated_user, restrict_tutore_patient, tutore_and_admin_only
-from .forms import UserRegisterForm, PacientForm, GeneralForm, TutoreForm
+from .forms import UserRegisterForm, PacientForm, GeneralForm, TutoreForm, AlzheimerForm, DiabetesForm,DementiaForm,DepressionForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.hashers import make_password
 
@@ -32,22 +32,18 @@ def about(request):
 def registerPage(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
-        tf = TutoreForm(request.POST)
-        if form.is_valid() and tf.is_valid():
-            tf.cleaned_data['nr_pacienti'] = 0
-            user = form.save()
-            tutore = tf.save(commit = False)
-            tutore.user = user
-            tutore.save()
+        if form.is_valid():
+            user = form.save(commit = False)
+            user.save()
             group = Group.objects.get(name='tutore')
             user.groups.add(group)
             username = form.cleaned_data.get('username')
+            Tutore.objects.create(user=user,nr_pacienti=0)
             messages.success(request, f'Account created for {username}!')
             return redirect('tutorial:website_loginPage')
     else:
         form = UserRegisterForm()
-        tf = TutoreForm()
-    return render(request, 'website/register.html', {'form': form, 'tut_form': tf})
+    return render(request, 'website/register.html', {'form': form})
 
 
 def loginPage(request):
@@ -77,46 +73,71 @@ def loginPage(request):
 def pacient_create_view(request):
     if request.method == 'POST':
         form = PacientForm(request.POST)
-        if form.is_valid():
+        form_user = UserRegisterForm(request.POST)
+        if form.is_valid() and form_user.is_valid():
+            fu = form_user.save(commit=False)
             fs = form.save(commit=False)
-            pacientName = form.cleaned_data.get('prenume')
             if request.user.is_authenticated:
-                fs.tutore = request.user.get_username()
                 t = Tutore.objects.get(user = request.user)
                 t.nr_pacienti += 1
                 t.save()
-            nume_pacient = form.cleaned_data['nume']
-            prenume_pacient = form.cleaned_data['prenume']
-            pass_pacient = form.cleaned_data['parola_pacient']
-            fs.pass_pacient =  pass_pacient
-            fs.user_pacient = nume_pacient.lower() + '.' + prenume_pacient.lower()
+            varsta = form.cleaned_data['varsta']
+            afectiune = form.cleaned_data['afectiune']
+            tel = form.cleaned_data['tel_urgenta']
+            fu.save()
+            fs.tutore = Tutore.objects.get(user = request.user)
 
-            fs.tutore = str(request.user)
-            messages.success(request, f'Pacientul {pacientName} a fost inserat in sistem de catre {fs.tutore}')
-            fs.save()
-            user_pacient = User.objects.create_user(username=fs.user_pacient,password=fs.pass_pacient)
+
+            Pacient.objects.create(user=fu,
+                                   varsta= varsta,
+                                   afectiune=afectiune,
+                                   tutore = fs.tutore,
+                                   tel_urgenta= tel
+                                   )
+
             group = Group.objects.get(name='pacient')
-            user_pacient.groups.add(group)
-
+            fu.groups.add(group)
             return redirect('tutorial:website_index')
     else:
         form = PacientForm()
+        form_user = UserRegisterForm
 
-    return render(request, 'website/update.html', {'form': form})
+    return render(request, 'website/update.html', {'form': form, 'form_user':form_user})
+
+
+def parse_disease(request):
+
+    form_disease = GeneralForm(request.POST)
+    date_pac = Pacient.objects.get(user=request.user)
+    if str(date_pac.afectiune) == 'alzheimer':
+        form_disease = AlzheimerForm(request.POST)
+    elif str(date_pac.afectiune) == 'diabet':
+        form_disease = AlzheimerForm(request.POST)
+    elif str(date_pac.afectiune) == 'dementa':
+        form_disease = AlzheimerForm(request.POST)
+    elif str(date_pac.afectiune) == 'depresie':
+        form_disease = AlzheimerForm(request.POST)
+
+    return form_disease
 
 
 def pacient_general_form_view(request):
     if request.method == 'POST':
         form = GeneralForm(request.POST)
-        if form.is_valid():
-            form.save(commit=False)
-            form.pacient = Pacient.objects.get(pk=1)
-            form.rating = 100
-            form.save()
+        form_disease = parse_disease(request)
+
+        if form.is_valid() and form_disease.is_valid():
+            instance = form.save(commit=False)
+            fd = form_disease.save(commit = False)
+
+            instance.pacient = Pacient.objects.get(user = request.user)
+            instance.rating = 100
+            instance.save()
             return redirect('tutorial:website_index')
     else:
         form = GeneralForm()
-    return render(request, 'website/pacient_general_form.html', {'form': form})
+        form_disease = parse_disease(request)
+    return render(request, 'website/pacient_general_form.html', {'form': form, 'form_disease':form_disease})
 
 
 def resultsView(request):

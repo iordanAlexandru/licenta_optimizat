@@ -8,7 +8,9 @@
             {% csrf_token %}
             <fieldset class="form-group">
                 <legend class="border-bottom mb-4">Hei! Vrem mai multe detalii despre tine.</legend>
+
                 {{ form|crispy }}
+                {{ form_disease|crispy }}
             </fieldset>
             <div class="form-roup">
                 <button class="btn btn-outline-info" type="submit">Trimite</button>

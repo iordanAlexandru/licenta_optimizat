@@ -39,10 +39,12 @@ class Pacient(models.Model):
 
 class PacientParsing(models.Model):
     pacient = models.ForeignKey(Pacient, on_delete=models.CASCADE)
-    rating = models.IntegerField()
+    rating = models.IntegerField() #general_rating
     activitate = models.CharField(max_length=50)
     dorinta= models.CharField(max_length=50)
     tip_fire= models.CharField(max_length=50)
-
+    # cele 3 campuri specifice bolii
+    #flag
+    #mood_rating
     def __str__(self):
         return str(self.pacient)

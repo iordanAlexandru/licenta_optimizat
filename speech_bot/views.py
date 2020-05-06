@@ -1,5 +1,7 @@
 from django.shortcuts import render
 import pyttsx3
+import nltk
+
 import speech_recognition as sr  # importing speech recognition package from google api
 # from pygame import mixer
 import playsound  # to play saved mp3 file
@@ -7,16 +9,29 @@ from gtts import gTTS  # google text to speech
 import os  # to save/open files
 import wolframalpha  # to calculate strings into formula, its a website which provides api, 100 times per day
 from selenium import webdriver  # to control browser operations
+from textblob import TextBlob
+from nltk.stem import WordNetLemmatizer
+lemmatizer = WordNetLemmatizer()
+import pickle
+import numpy as np
 
+from tensorflow.keras.models import load_model
+model = load_model('static/chatbot_model.h5')
+import json
+import random
+from tutorial.models import PacientParsing
 
-
+intents = json.loads(open('static/intents.json').read())
+words = pickle.load(open('static/words.pkl','rb'))
+classes = pickle.load(open('static/classes.pkl','rb'))
 
 
 
 # Create your views here.
 
+
 def home(request):
-    return render(request, 'chatbot/home_bot.html')
+    return render(request, 'speech_bot/home_bot.html')
 num = 1
 
 def assistant_speaks(output):
@@ -110,46 +125,97 @@ def open_application(input):
         return
 
 
-def process_text(input):
+negative_phrases = []
+with open('static/stopwords.txt', 'r') as file:
+    stopwords = file.read().replace('\n', '')
+
+
+def parse_stopwords(text):
+    result = ''
+    text_split = text.split(' ')
+    result = [word for word in text_split if word not in stopwords]
+    result = ' '.join(result)
+    return 'google ' + result
+
+
+def process_text(input, intent):
     try:
-        if "who are you" in input or "define yourself" in input:
-            speak = '''Hello, I am Person. Your personal Assistant.
-            I am here to make your life easier. 
-            You can command me to perform various tasks such as calculating sums or opening applications'''
-            assistant_speaks(speak)
-            return
-        elif "who made you" in input or "created you" in input:
-            speak = "I have been created by Alex."
-            assistant_speaks(speak)
-            return
-        elif "calculate" in input.lower():
-            app_id = "E46YXW-T5LG6RT7K7"
-            client = wolframalpha.Client(app_id)
-            indx = input.lower().split().index('calculate')
-            query = input.split()[indx + 1:]
-            res = client.query(' '.join(query))
-            answer = next(res.results).text
-            assistant_speaks("The answer is " + answer)
-            return
-        elif 'open' in input:
-            open_application(input.lower())
-            return
-        elif 'search' in input or 'play' in input:
-            search_web(input.lower())
-            return
-        else:
-            assistant_speaks("I can search the web for you, Do you want to continue?")
+        if intent == 'youtube':
             ans = get_audio()
-            if 'yes' in str(ans) or 'yeah' in str(ans):
-                search_web(input)
-            else:
-                return
+            assistant_speaks('Searching youtube for ' + ans)
+            search_web('youtube ' + ans)
+        if intent == 'web':
+            ans = get_audio()
+            assistant_speaks('Searching the web for ' +ans)
+            search_web('google '+ ans)
+        if intent == 'bad_mood':
+            blob1 = TextBlob(input)
+            print(format(blob1.sentiment))
+            assistant_speaks("can you be more specific and tell me exactly what disturbed you?")
+            ans = get_audio()
+            negative_phrases.append(ans)
+            assistant_speaks("Now I am going to use my wizard powers to make you feel better")
+            while(blob1.polarity<0):
+                search_web('youtube funny videos')
+                blob1 = TextBlob(input)
+                # random joke,video, meme
+                # after x randoms i ask him how he is feeling
     except Exception as e:
         print(e)
         assistant_speaks("I don't understand, I can search the web for you, Do you want to continue?")
         ans = get_audio()
         if 'yes' in str(ans) or 'yeah' in str(ans):
             search_web(input)
+
+def clean_up_sentence(sentence):
+    sentence_words = nltk.word_tokenize(sentence)
+    sentence_words = [lemmatizer.lemmatize(word.lower()) for word in sentence_words]
+    return sentence_words
+
+# return bag of words array: 0 or 1 for each word in the bag that exists in the sentence
+
+def bow(sentence, words, show_details=True):
+    # tokenize the pattern
+    sentence_words = clean_up_sentence(sentence)
+    # bag of words - matrix of N words, vocabulary matrix
+    bag = [0]*len(words)
+    for s in sentence_words:
+        for i,w in enumerate(words):
+            if w == s:
+                # assign 1 if current word is in the vocabulary position
+                bag[i] = 1
+                if show_details:
+                    print ("found in bag: %s" % w)
+    return(np.array(bag))
+
+def predict_class(sentence, model):
+    # filter out predictions below a threshold
+    p = bow(sentence, words,show_details=False)
+    res = model.predict(np.array([p]))[0]
+    ERROR_THRESHOLD = 0.25
+    results = [[i,r] for i,r in enumerate(res) if r>ERROR_THRESHOLD]
+    # sort by strength of probability
+    results.sort(key=lambda x: x[1], reverse=True)
+    return_list = []
+    for r in results:
+        return_list.append({"intent": classes[r[0]], "probability": str(r[1])})
+    return return_list
+
+def getResponse(ints, intents_json):
+    tag = ints[0]['intent']
+    list_of_intents = intents_json['intents']
+    for i in list_of_intents:
+        if(i['tag']== tag):
+            result = random.choice(i['responses'])
+            break
+    return result
+
+def chatbot_response(msg):
+    ints = predict_class(msg, model)
+    intent = next(iter(ints[0].values()))
+    res = getResponse(ints, intents)
+    return res, intent
+
 
 
 def speech_to_text(request):
@@ -169,8 +235,10 @@ def speech_to_text(request):
         output = "Could not request results; {0}".format(e)
     data = output
     while (1):
-        assistant_speaks("What can i do for you?")
+        assistant_speaks('What can i do for you?')
         text = get_audio()
+        res, intent = chatbot_response(text)
+        assistant_speaks(res)
         if text == 0:
             continue
         # assistant_speaks(text)
@@ -178,5 +246,6 @@ def speech_to_text(request):
             assistant_speaks('Ok bye, Alex.')
             break
         text = text.lower()
-        process_text(text)
-    return render(request, 'chatbot/speech_to_text.html', {'data':'See ya later !'})
+        print(intent)
+        process_text(text, intent)
+    return render(request, 'speech_bot/speech_to_text.html', {'data': 'See ya later !'})

@@ -39,8 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'speech_bot',
     'tutorial',
-    'chatbot',
     'crispy_forms',
     'jquery',
 

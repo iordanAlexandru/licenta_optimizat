@@ -18,9 +18,10 @@ from django.urls import path
 from django.contrib.auth.views import LoginView
 from . import views
 
-app_name = "chatbot"
+app_name = "speech_bot"
 urlpatterns = [
     path("home_bot", views.home, name='home'),
     path("speech_to_text/", views.speech_to_text, name='speech_to_text'),
+
  #   path('login/', LoginView.as_view(template_name='website/login.html'), name='website_login'),
 ]

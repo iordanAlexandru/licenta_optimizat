@@ -1,18 +1,22 @@
 
-from .models import Pacient, Tutore, PacientParsing
+from .models import Pacient, Tutore, PacientParsing, DepressionParsing, AlzheimerParsing
 from django.contrib.auth.models import Group
 
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .decorators import restrict_unauthenticated_user, restrict_tutore_patient, tutore_and_admin_only
-from .forms import UserRegisterForm, PacientForm, GeneralForm, TutoreForm, AlzheimerForm, DiabetesForm,DepressionForm
+from .decorators import restrict_unauthenticated_user, restrict_pacient_general_form, restrict_tutore_patient, tutore_and_admin_only
+from .forms import UserRegisterForm, PacientForm, GeneralForm, DepressionMoodForm, AlzheimerForm, DiabetesForm,DepressionForm, AlzheimerMoodForm
 from django.contrib.auth import authenticate, login, logout
 
-
+import numpy as np
 
 
 def index(request):
-    return render(request, 'website/index.html')
+    context = {}
+    if request.user.is_authenticated and request.user.groups.filter(name='pacient').exists():
+        pacient = Pacient.objects.get(user=request.user)
+        context = {'afectiune': pacient.afectiune, 'flag':pacient.flag}
+    return render(request, 'website/index.html', context)
 
 
 def logoutPage(request):
@@ -83,7 +87,6 @@ def pacient_create_view(request):
             fu.save()
             fs.tutore = Tutore.objects.get(user = request.user)
 
-
             Pacient.objects.create(user=fu,
                                    varsta= varsta,
                                    afectiune=afectiune,
@@ -102,15 +105,23 @@ def pacient_create_view(request):
 
 
 def parse_disease(request):
-    rating = 0
     form_disease = GeneralForm(request.POST)
     date_pac = Pacient.objects.get(user=request.user)
+
     if str(date_pac.afectiune) == 'alzheimer':
-        form_disease = AlzheimerForm(request.POST)
+        form_disease = AlzheimerForm()
+        if request.method == 'POST':
+            form_disease = AlzheimerForm(request.POST)
+
     elif str(date_pac.afectiune) == 'diabet':
-        form_disease = DiabetesForm(request.POST)
+        form_disease = DiabetesForm()
+        if request.method == 'POST':
+            form_disease = DiabetesForm(request.POST)
+
     elif str(date_pac.afectiune) == 'depresie':
-        form_disease = DepressionForm(request.POST)
+        form_disease = DepressionForm()
+        if request.method == 'POST':
+            form_disease = DepressionForm(request.POST)
 
     return form_disease
 
@@ -152,7 +163,7 @@ def calculate_rating(request, fd, r1, r3): # e nevoie sa reverific boala pt rati
     rating = np.sum(rating1)+rating2_q1+rating2_q2
     return rating
 
-
+@restrict_pacient_general_form
 def pacient_general_form_view(request):
     if request.method == 'POST':
         form = GeneralForm(request.POST)
@@ -177,17 +188,89 @@ def pacient_general_form_view(request):
             instance.dorinta = r2
             instance.tip_fire = r3
 
-            instance.save()
+            intr1 = form_disease.cleaned_data['c4']
+            intr2 = form_disease.cleaned_data['c5']
+            intr3 = form_disease.cleaned_data['c6']
+            pac_pars = PacientParsing.objects.create(pacient = instance.pacient,
+                                                     rating = instance.rating,
+                                                     activitate = instance.activitate,
+                                                     dorinta = instance.dorinta,
+                                                     tip_fire = instance.tip_fire,
+                                                     intrebare1 = intr1,
+                                                     intrebare2= intr2,
+                                                     intrebare3= intr3,
+                                                     )
+            instanta_pacient = Pacient.objects.get(user=request.user)
+            instanta_pacient.flag= True
+            instanta_pacient.save()
             return redirect('tutorial:website_index')
     else:
         form = GeneralForm()
         form_disease = parse_disease(request)
     return render(request, 'website/pacient_general_form.html', {'form': form, 'form_disease':form_disease})
 
+# multiple forms, one render | afectiune
+
+def calcul_mood_form(form, afectiune):
+    rating = 0
+    if afectiune == 'depresie':
+        for key, value in form.cleaned_data.items():
+            rating = rating + int(value)
+    if afectiune == 'alzheimer':
+        for key, value in form.cleaned_data.items():
+            rating = rating + int(value)
+    return rating
+
+
+def parse_mood_form(request, afectiune):
+    form = None
+    if afectiune == 'alzheimer':
+        form = AlzheimerMoodForm()
+        if request.method == 'POST':
+            form = AlzheimerMoodForm(request.POST)
+    if afectiune == 'depresie':
+        form = DepressionMoodForm()
+        if request.method == 'POST':
+            form = DepressionMoodForm(request.POST)
+    return form
+
+def creation_factory(pac_pars, afectiune, rating):
+    if afectiune == 'alzheimer':
+        try:
+            instanta = AlzheimerParsing.objects.get(pacientparse=pac_pars)
+            old_rating = instanta.disease_rating
+            instanta.disease_rating = old_rating + ',' + str(rating)
+            instanta.save()
+        except AlzheimerParsing.DoesNotExist:
+            AlzheimerParsing.objects.create(pacientparse=pac_pars, disease_rating=rating)
+    elif afectiune == 'depresie':
+        try:
+            instanta = DepressionParsing.objects.get(pacientparse=pac_pars)
+            old_rating = instanta.disease_rating
+            instanta.disease_rating = old_rating + ',' + str(rating)
+            instanta.save()
+        except DepressionParsing.DoesNotExist:
+            DepressionParsing.objects.create(pacientparse=pac_pars, disease_rating=rating)
 
 def resultsView(request):
-    all_entries = Pacient.objects.all()
-    return render(request, 'website/results.html',{'all_entries': all_entries})
+    if request.method == 'POST':
+        pacient = Pacient.objects.get(user=request.user)
+        form = parse_mood_form(request, pacient.afectiune)
+        if form.is_valid():
+            rating = calcul_mood_form(form, pacient.afectiune)
+            pacient_parsing = PacientParsing.objects.get(pacient = pacient)
+            creation_factory(pacient_parsing,pacient.afectiune,rating)
+    else:
+        pacient = Pacient.objects.get(user=request.user)
+        form = parse_mood_form(request, pacient.afectiune)
+
+    context = {
+        'form': form,
+        'afectiune': pacient.afectiune
+    }
+    return render(request, 'website/results.html', context)
+
+
 
 # form = PacientForm(request.POST)
 # if form.is_valid():

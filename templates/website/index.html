@@ -55,9 +55,29 @@
                     </li>
                     {% endif %}
                     {% if request.user|has_group:"pacient" or request.user|has_group:"admin"%}
-                    <li class="nav-item">
-                        <a class="nav-item nav-link" href="{% url 'tutorial:website_general_form' %}">Chestionar</a>
-                    </li>
+                        {% if flag == True %}
+                            {% if afectiune == 'alzheimer'%}
+                                <li class="nav-item">
+                                    <a class="nav-item nav-link" href="{% url 'tutorial:website_results' %}">Chestionar Stare</a>
+                                </li>
+                            {% endif %}
+                             {% if afectiune == 'depresie'%}
+                                <li class="nav-item">
+                                    <a class="nav-item nav-link" href="{% url 'tutorial:website_results' %}">Chestionar Stare</a>
+                                </li>
+                            {% endif %}
+                             {% if afectiune == 'diabet'%}
+                                <li class="nav-item">
+                                    <a class="nav-item nav-link" href="{% url 'tutorial:website_results' %}">Chestionar Stare</a>
+                                </li>
+                             {% endif %}
+                        {% endif %}
+                        {% if flag == False %}
+                            <li class="nav-item">
+                                    <a class="nav-item nav-link" href="{% url 'tutorial:website_general_form' %}">Chestionar</a>
+                            </li>
+                        {% endif %}
+
                     {% endif %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownBlog" data-toggle="dropdown"

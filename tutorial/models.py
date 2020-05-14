@@ -1,9 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+import json
 from django.core.validators import RegexValidator
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import int_list_validator
+
 
 class Tutore(models.Model):
     user = models.OneToOneField(
@@ -33,18 +34,52 @@ class Pacient(models.Model):
     vaduv = models.BooleanField(default = False)
     tutore = models.ForeignKey(Tutore, on_delete=models.CASCADE)
     tel_urgenta = models.CharField(max_length=10, validators=[RegexValidator(r'^\d{0,10}$')])
-
+    flag = models.BooleanField(default=False)
     def __str__(self):
         return self.user.username
 
 class PacientParsing(models.Model):
     pacient = models.ForeignKey(Pacient, on_delete=models.CASCADE)
     rating = models.IntegerField() #general_rating
+    contor_forms = models.IntegerField(default=0)
     activitate = models.CharField(max_length=50)
     dorinta= models.CharField(max_length=50)
     tip_fire= models.CharField(max_length=50)
-    # cele 3 campuri specifice bolii
-    #flag
-    #mood_rating
+    intrebare1 = models.CharField(max_length=200, blank=True)
+    intrebare2 = models.CharField(max_length=200, blank=True)
+    intrebare3 = models.CharField(max_length=200, blank=True)
+    contor_mesaje = models.IntegerField(default=0)
+    _negative_problems = models.TextField(default='[]', blank=True)
+    @property
+    def problems(self):
+        return json.loads(self._negative_problems)
+    @problems.setter
+    def problems(self,value):
+        self._negative_problems = json.dumps(self.problems)
+
+
     def __str__(self):
         return str(self.pacient)
+
+class DepressionParsing(models.Model):
+    pacientparse = models.ForeignKey(PacientParsing, on_delete=models.CASCADE)
+    disease_rating = models.CharField(default=0, validators=[int_list_validator], max_length=100)
+
+    def __str__(self):
+        return str(self.pacientparse)
+
+
+class AlzheimerParsing(models.Model):
+    pacientparse = models.ForeignKey(PacientParsing, on_delete=models.CASCADE)
+    disease_rating = models.CharField(default=0, validators=[int_list_validator], max_length=100)
+
+    def __str__(self):
+        return str(self.pacientparse)
+
+
+class DiabetesParsing(models.Model):
+    pacientparse = models.ForeignKey(PacientParsing, on_delete=models.CASCADE)
+    disease_rating = models.CharField(default=0, validators=[int_list_validator], max_length=100)
+
+    def __str__(self):
+        return str(self.pacientparse)

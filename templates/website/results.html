@@ -1,12 +1,13 @@
 {% extends "website/base.html" %}
-
+{% load crispy_forms_tags %}
 
 {% block content %}
     <h1>Buna !</h1>
-    {% for entity in all_entries %}
-        <p>Numele pacientului este: {{ entity.nume }}</p>
-        <p>Tutorele este: {{ entity.tutore }}</p>
-    {% endfor %}
+    <form action='.' method='POST'>
+            {% csrf_token %}
+            {{ form|crispy }}
+            <input type='submit' value='Save'/>
+        </form>
 {% endblock %}
 
 

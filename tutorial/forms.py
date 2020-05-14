@@ -7,7 +7,7 @@ from django.contrib.auth.models import Permission
 from django.core.validators import MaxValueValidator, MinValueValidator
 from .models import Pacient, Tutore, PacientParsing
 from django.core.validators import RegexValidator
-
+from django.utils.safestring import mark_safe
 
 
 class UserRegisterForm(UserCreationForm):
@@ -177,3 +177,142 @@ class DepressionForm(forms.ModelForm):
             'c5',
             'c6'
         ]
+
+alegere_depr_mood= [
+    ('1', 'Deloc'),
+    ('2', 'Cateva zile'),
+    ('3','Mai mult decat jumatate din zile'),
+    ('4','Aproape in fiecare zi'),
+    ]
+
+class DepressionMoodForm(forms.ModelForm):
+    c1 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani, cat de des ai fost deranjat de faptul ca '
+                                 '<strong>n-ai avut stare, incat simteai nevoia de a te misca mai des decat de '
+                                 'obicei?</strong>'), choices=alegere_depr_mood,
+                           widget=forms.RadioSelect)
+    c2 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani, cat de des ai fost deranjat de faptul ca '
+                                           '<strong>vorbeai sau te miscai foarte incet incat alti oameni au '
+                                           'observat acest lucru?</strong>'), choices=alegere_depr_mood,
+                           widget=forms.RadioSelect)
+    c3 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani, cat de des ai fost deranjat de faptul ca '
+                                           '<strong>aveai probleme concentrandu-te asupra lucrurilor minore precum '
+                                           'cititul sau vizionatul unor emisiuni</strong>'), choices=alegere_depr_mood,
+                           widget=forms.RadioSelect)
+    c4 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani, cat de des ai fost deranjat de faptul ca '
+                                           '<strong>aveai o stima scazuta de sine - ca si cum ai fi un esec sau '
+                                           'te-ai dezamagit pe tine sau familia?</strong>'), choices=alegere_depr_mood,
+                           widget=forms.RadioSelect)
+    c5 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani, cat de des ai fost deranjat de faptul ca '
+                                           '<strong>n-ai mancat deloc sau ai mancat prea mult?</strong>'), choices=alegere_depr_mood,
+                           widget=forms.RadioSelect)
+    c6 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani, cat de des ai fost deranjat de faptul ca '
+                                           '<strong>te simteai obosit sau nu aveai energie?</strong>'), choices=alegere_depr_mood,
+                           widget=forms.RadioSelect)
+    c7 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani, cat de des ai fost deranjat de faptul ca '
+                                           '<strong>ai probleme cu somnul, adormi greu, dormi prea mult sau dormi'
+                                           ' prea putin?</strong>'), choices=alegere_depr_mood,
+                           widget=forms.RadioSelect)
+    c8 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani, cat de des ai fost deranjat de faptul ca '
+                                           '<strong>aveai o stare depresiva, te simteai prost sau fara speranta?'
+                                           '</strong>'), choices=alegere_depr_mood,
+                           widget=forms.RadioSelect)
+    c9 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani, cat de des ai fost deranjat de faptul ca '
+                                           '<strong> nu aveai interes sau placere in a face anumite lucruri'
+                                           '</strong>'), choices=alegere_depr_mood,
+                           widget=forms.RadioSelect)
+    class Meta:
+        model = PacientParsing
+        fields = [
+            'c1',
+            'c2',
+            'c3',
+            'c4',
+            'c5',
+            'c6',
+            'c7',
+            'c8',
+            'c9',
+        ]
+
+alegere_alzheimer_mood = [
+    ('1','Da'),
+    ('0','Nu'),
+]
+class AlzheimerMoodForm(forms.ModelForm):
+    c1 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani ti s-a intamplat sa <strong>uiti in ce zi din saptamana'
+                                           ' esti?</strong>'), choices=alegere_alzheimer_mood,
+                           widget=forms.RadioSelect)
+    c2 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani<strong>ai cautat vreun lucru si ai uitat ce anume cauti?</strong>'),
+                           choices=alegere_alzheimer_mood,
+                           widget=forms.RadioSelect)
+    c3 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani ti s-a intamplat sa <strong>uiti vreun nume de-al prietenilor'
+                                           ' tai? </strong>'),
+                           choices=alegere_alzheimer_mood,
+                           widget=forms.RadioSelect)
+    c4 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani ti s-a intamplat sa <strong>aduni numere cu doua cifre '
+                                           'si sa iti fie greu sa le calculezi din minte?</strong>'),
+                           choices=alegere_alzheimer_mood,
+                           widget=forms.RadioSelect)
+    c5 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani ti s-a intamplat ca <strong>rareori sa te simti energic?</strong>'),
+                           choices=alegere_alzheimer_mood,
+                           widget=forms.RadioSelect)
+    c6 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani <strong>te-au suparat mai des problemele minore decat de'
+                                           ' obicei?</strong> '),
+                           choices=alegere_alzheimer_mood,
+                           widget=forms.RadioSelect)
+    c7 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani ti s-a intamplat sa iti fie <strong>greu sa te concentrezi '
+                                           'pentru macar o ora?</strong> '),
+                           choices=alegere_alzheimer_mood,
+                           widget=forms.RadioSelect)
+    c8 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani ti s-a intamplat sa <strong>gasesti cheile undeva si nu-ti'
+                                           ' amintesti faptul ca le-ai pus acolo?</strong>'),
+                           choices=alegere_alzheimer_mood,
+                           widget=forms.RadioSelect)
+    c9 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani ti s-a intamplat sa <strong>te repeti de mai multe ori?</strong>'),
+                           choices=alegere_alzheimer_mood,
+                           widget=forms.RadioSelect)
+    c10 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani ti s-a intamplat sa <strong>te pierzi undeva unde ai mai'
+                                            ' fost inainte?</strong>'),
+                           choices=alegere_alzheimer_mood,
+                           widget=forms.RadioSelect)
+    c11 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani ti s-a intamplat ca <strong>prietenii sau familia sa observe'
+                                            ' ca esti mai uituc decat de obicei?</strong>'),
+                           choices=alegere_alzheimer_mood,
+                           widget=forms.RadioSelect)
+    c12 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani ti s-a intamplat sa <strong>ratezi anumite intalniri /'
+                                            ' programari din cauza ca ai uitat?</strong> '),
+                           choices=alegere_alzheimer_mood,
+                           widget=forms.RadioSelect)
+    c13 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani ti s-a intamplat sa<strong> uiti punctul de vedere '
+                                            'pe care voiai sa il spui?</strong>'),
+                           choices=alegere_alzheimer_mood,
+                           widget=forms.RadioSelect)
+    c14 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani ti s-a intamplat sa<strong> depinzi de cafeina / bauturi '
+                                            'energizante pentru a te putea concentra?</strong> '),
+                           choices=alegere_alzheimer_mood,
+                           widget=forms.RadioSelect)
+    c15 = forms.ChoiceField(label=mark_safe('In ultimele doua saptamani ti s-a intamplat sa <strong>trebuiasca mai mult timp sa '
+                                            'inveti lucruri care in mod normal ti-ar lua putin timp?</strong> '),
+                           choices=alegere_alzheimer_mood,
+                           widget=forms.RadioSelect)
+
+    class Meta:
+        model = PacientParsing
+        fields = [
+            'c1',
+            'c2',
+            'c3',
+            'c4',
+            'c5',
+            'c6',
+            'c7',
+            'c8',
+            'c9',
+            'c10',
+            'c11',
+            'c12',
+            'c13',
+            'c14',
+            'c15',
+        ]
+

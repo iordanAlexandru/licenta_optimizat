@@ -1,7 +1,9 @@
+import time
+
 from django.shortcuts import render
 import pyttsx3
 import nltk
-
+from django.core.mail import send_mail
 import speech_recognition as sr  # importing speech recognition package from google api
 # from pygame import mixer
 import playsound  # to play saved mp3 file
@@ -19,7 +21,7 @@ from tensorflow.keras.models import load_model
 model = load_model('static/chatbot_model.h5')
 import json
 import random
-from tutorial.models import PacientParsing
+from tutorial.models import PacientParsing, Pacient
 
 intents = json.loads(open('static/intents.json').read())
 words = pickle.load(open('static/words.pkl','rb'))
@@ -138,34 +140,56 @@ def parse_stopwords(text):
     return 'google ' + result
 
 
-def process_text(input, intent):
+def process_text(input, intent,request):
     try:
-        if intent == 'youtube':
-            ans = get_audio()
-            assistant_speaks('Searching youtube for ' + ans)
-            search_web('youtube ' + ans)
+        if intent == 'web_search':
+            if 'about' in input:
+                ans = input
+                indx = ans.split().index('about')
+                query = ans.split()[indx + 1:]
+                search_web('google '+ query[-1])
+            if 'for' in input:
+                ans = input
+                indx = ans.split().index('for')
+                query = ans.split()[indx + 1:]
+                search_web('google '+ query[-1])
         if intent == 'web':
             ans = get_audio()
-            assistant_speaks('Searching the web for ' +ans)
-            search_web('google '+ ans)
+            search_web('google' + ans)
         if intent == 'bad_mood':
             blob1 = TextBlob(input)
             print(format(blob1.sentiment))
             assistant_speaks("can you be more specific and tell me exactly what disturbed you?")
             ans = get_audio()
-            negative_phrases.append(ans)
+            pacient = Pacient.objects.get(user = request.user)
+            pac_pars = PacientParsing.objects.get(pacient= pacient)
+
+            pac_pars._negative_problems += ans + '\n'
+            pac_pars.contor_mesaje += 1
+            if pac_pars.contor_mesaje>=1:
+                pac_pars.contor_mesaje = 0
+                print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                send_mail(
+                    'Mesaj informare pacient ' + str(pacient),
+                    pac_pars._negative_problems,
+                    'virtual_assistant@gov.com',
+                    ['bpiwbpiw1@gmail.com'],
+                    fail_silently=False,
+                )
+
+
+            pac_pars.save()
             assistant_speaks("Now I am going to use my wizard powers to make you feel better")
             while(blob1.polarity<0):
-                search_web('youtube funny videos')
+                #search_web('youtube funny videos')
                 blob1 = TextBlob(input)
+                break
                 # random joke,video, meme
                 # after x randoms i ask him how he is feeling
     except Exception as e:
         print(e)
-        assistant_speaks("I don't understand, I can search the web for you, Do you want to continue?")
+        assistant_speaks("I don't understand, Can you please repeat?")
         ans = get_audio()
-        if 'yes' in str(ans) or 'yeah' in str(ans):
-            search_web(input)
 
 def clean_up_sentence(sentence):
     sentence_words = nltk.word_tokenize(sentence)
@@ -225,7 +249,7 @@ def speech_to_text(request):
     # get audio from the microphone
     r = sr.Recognizer()
     with sr.Microphone() as source:
-        print("Speak:")
+        print("(Test) Speak:")
         audio = r.listen(source)
     try:
         output = " " + r.recognize_google(audio)
@@ -235,17 +259,15 @@ def speech_to_text(request):
         output = "Could not request results; {0}".format(e)
     data = output
     while (1):
-        assistant_speaks('What can i do for you?')
+        time.sleep(0.1)
         text = get_audio()
         res, intent = chatbot_response(text)
+        print("intent: " + intent)
         assistant_speaks(res)
         if text == 0:
             continue
-        # assistant_speaks(text)
-        if "exit" in str(text) or "bye" in str(text) or "go " in str(text) or "sleep" in str(text):
-            assistant_speaks('Ok bye, Alex.')
+        if intent=='goodbye':
             break
         text = text.lower()
-        print(intent)
-        process_text(text, intent)
+        process_text(text, intent, request)
     return render(request, 'speech_bot/speech_to_text.html', {'data': 'See ya later !'})

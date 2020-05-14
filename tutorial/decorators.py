@@ -1,7 +1,7 @@
 from collections import defaultdict
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from .models import Pacient, Tutore, User
+from .models import Pacient, Tutore, User, PacientParsing
 
 
 def restrict_unauthenticated_user(view_func):
@@ -13,6 +13,15 @@ def restrict_unauthenticated_user(view_func):
             return redirect('tutorial:website_index')
     return wrapper_func
 
+def restrict_pacient_general_form(view_func):
+    def wrapper_func(request, *args, **kwargs):
+        user = request.user
+        pacient = Pacient.objects.get(user = request.user)
+        if pacient.flag == False:
+            return view_func(request, *args, **kwargs)
+        else:
+            return redirect('tutorial:website_index')
+    return wrapper_func
 
 def allowed_users(allowed_roles = []):
     def decorator(view_func):

@@ -24,11 +24,17 @@
          "responses": ["I can surf the web for you, open applications and execute other commands", "I am here for your needs. I can search the web, play music and open applications"],
          "context": [""]
         },
+        {"tag": "web_search",
+         "patterns": ["I would like to know more about", "I want to search for", "Can you search about", "Can you search for"],
+         "responses": ["Sure, I am opening the browser now", "Okie doki. I am going to open the browser","Sure thing, searching the web now"],
+         "context": [""]
+        },
         {"tag": "web",
-         "patterns": ["I would like to search something on the web", "I want to surf on the web", "I want to know something more", "Search the web"],
+         "patterns": ["I want to look on web", "I want to surf on the web", "Search the web"],
          "responses": ["Sure, what do you want to search for?", "Okie doki. What should I search about?","Sure thing, tell me what do you want to know more about?"],
          "context": [""]
         },
+
         {"tag": "youtube",
          "patterns": ["I would like to play some music", "I want to listen to music", "Find a song for me", "Search on youtube"],
          "responses": ["Sure, what do you want to search for?", "Okie doki. What song?","Sure thing, tell me the song name?"],
@@ -53,6 +59,31 @@
          "patterns": [],
          "responses": ["Loading hospital details"],
          "context": [""]
+        },
+        { "tag": "boredom",
+        "patterns": [ "I am bored", "Do you know any fun activities?", "I want to have fun" ],
+        "responses": [ "I got your favorite books, wanna take a look?", "Would you like to workout?", "Do you want to make any new friends?" ],
+        "context": [ " " ]
+        },
+        { "tag": "news",
+        "patterns": [ "What are todays news?", "did something interesting happened today?", "can you tell me the news, please?" ],
+        "responses": [ "The most important news for today are ", "Here is what I found out.", "Let me search for a bit, these are the headlines: " ],
+        "context": [ " " ]
+        },
+        { "tag": "hungry",
+        "patterns": ["I am starving", "what can I eat?", "I want to eat something"],
+        "responses":["Here. Check these restaurants, they are the best and they can deliver food at your place!", "Here: the perfect recipe for your diet!"],
+        "context": [" "]
+        },
+        { "tag": "lost_items",
+        "patterns": [ "where did I put my wallet/ key/ pen/ watch?", "do you know where I put my wallet/ key/ pen/ watch?", "help me find my wallet/ key/ pen/ watch"],
+        "responses": [ "I think that you put it on the table", "maybe it is in your bedroom", "check the drawers and the couch!", "maybe it fell on the floor"],
+        "context": [ " " ]
+        },
+        { "tag": "learn",
+        "patterns": [ "what can I learn today?", "I want to improve my knowledge", "help me achieve some new skills"],
+        "responses": [ "check this link. There are some interesting courses about almost everything!", "I prepared for you a new documentary. Watch it on TV!", "here are some games about culture! Play now!"],
+        "context": [ " " ]
         }
-   ]
+]
 }

@@ -63,10 +63,10 @@ def pacient_and_admin_only(view_func):
 def restrict_tutore_patient(view_func):
     def wrapper_func(request, *args, **kwargs):
         username_get = request.user
-        print(username_get)
         selected_user = Tutore.objects.get(user = username_get)
-        print(selected_user)
+
         print('!!!!!!!!!!!!')
+        print(selected_user)
         print(selected_user.nr_pacienti)
         if selected_user.nr_pacienti > 100:
             return HttpResponse("Ne pare rau, ati introdus deja numarul maxim de pacienti !<br>"

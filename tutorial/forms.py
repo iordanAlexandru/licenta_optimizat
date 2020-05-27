@@ -89,7 +89,7 @@ alegere_greutate= [
     ]
 alegere_stres= [
     ('1', 'Nu'),
-    ('2', 'Nu stiu'),
+    ('2', 'Uneori'),
     ('3','Da'),
     ]
 alegere_dieta= [

@@ -34,7 +34,11 @@
          "responses": ["Sure, what do you want to search for?", "Okie doki. What should I search about?","Sure thing, tell me what do you want to know more about?"],
          "context": [""]
         },
-
+        {"tag": "event",
+         "patterns": ["I want to create an event", "I want to set up an appointment", "I want you to set an event", "Please create an event for me"],
+         "responses": ["Sure", "Okie doki","Sure thing","No problem"],
+         "context": [""]
+        },
         {"tag": "youtube",
          "patterns": ["I would like to play some music", "I want to listen to music", "Find a song for me", "Search on youtube"],
          "responses": ["Sure, what do you want to search for?", "Okie doki. What song?","Sure thing, tell me the song name?"],
@@ -66,8 +70,8 @@
         "context": [ " " ]
         },
         { "tag": "news",
-        "patterns": [ "What are todays news?", "did something interesting happened today?", "can you tell me the news, please?" ],
-        "responses": [ "The most important news for today are ", "Here is what I found out.", "Let me search for a bit, these are the headlines: " ],
+        "patterns": [ "What are todays news?", "what are the news?", "can you tell me the news?" ],
+        "responses": [""],
         "context": [ " " ]
         },
         { "tag": "hungry",
@@ -75,15 +79,20 @@
         "responses":["Here. Check these restaurants, they are the best and they can deliver food at your place!", "Here: the perfect recipe for your diet!"],
         "context": [" "]
         },
-        { "tag": "lost_items",
-        "patterns": [ "where did I put my wallet/ key/ pen/ watch?", "do you know where I put my wallet/ key/ pen/ watch?", "help me find my wallet/ key/ pen/ watch"],
-        "responses": [ "I think that you put it on the table", "maybe it is in your bedroom", "check the drawers and the couch!", "maybe it fell on the floor"],
-        "context": [ " " ]
+        { "tag": "yes",
+        "patterns": ["yes", "of course", "oui","sure","affirmative","absolutely","yeah"],
+        "responses":[],
+        "context": [" "]
         },
-        { "tag": "learn",
-        "patterns": [ "what can I learn today?", "I want to improve my knowledge", "help me achieve some new skills"],
-        "responses": [ "check this link. There are some interesting courses about almost everything!", "I prepared for you a new documentary. Watch it on TV!", "here are some games about culture! Play now!"],
-        "context": [ " " ]
+        { "tag": "no",
+        "patterns": ["no","never","negative","by no means","absolutely not","not at all"],
+        "responses":[],
+        "context": [" "]
+        },
+        { "tag": "discussion",
+        "patterns": ["I would like to discuss something with you", "I want to have a discussion", "let's discuss something", "i want you to listen to me" ],
+        "responses":["Sure, we can talk about anything", "I am open to have any kind of conversation", "Sure thing, i am going to be all ears"],
+        "context": [" "]
         }
 ]
 }

@@ -57,14 +57,28 @@ class PacientParsing(models.Model):
     def problems(self,value):
         self._negative_problems = json.dumps(self.problems)
 
+    def __str__(self):
+        return str(self.pacient)
+
+
+class PacientDetails(models.Model):
+    pacient = models.ForeignKey(Pacient,on_delete=models.CASCADE)
+    fav_book = models.CharField( max_length=200, default='')
+    fav_movie = models.CharField(max_length=200, default='')
+    fav_song = models.CharField(max_length = 200, default='')
+    fav_activity= models.CharField(max_length=200, default='')
+    fav_passion = models.CharField(max_length= 200, default='')
+    fav_game = models.CharField(max_length = 200, default='')
+    hangout = models.IntegerField( default = 0)
 
     def __str__(self):
         return str(self.pacient)
 
+
 class DepressionParsing(models.Model):
     pacientparse = models.ForeignKey(PacientParsing, on_delete=models.CASCADE)
     disease_rating = models.CharField(default=0, validators=[int_list_validator], max_length=100)
-
+    tutore = models.ForeignKey(Tutore, on_delete=models.CASCADE,  null=True)
     def __str__(self):
         return str(self.pacientparse)
 
@@ -72,7 +86,7 @@ class DepressionParsing(models.Model):
 class AlzheimerParsing(models.Model):
     pacientparse = models.ForeignKey(PacientParsing, on_delete=models.CASCADE)
     disease_rating = models.CharField(default=0, validators=[int_list_validator], max_length=100)
-
+    tutore = models.ForeignKey(Tutore, on_delete=models.CASCADE, null=True)
     def __str__(self):
         return str(self.pacientparse)
 
@@ -80,6 +94,7 @@ class AlzheimerParsing(models.Model):
 class DiabetesParsing(models.Model):
     pacientparse = models.ForeignKey(PacientParsing, on_delete=models.CASCADE)
     disease_rating = models.CharField(default=0, validators=[int_list_validator], max_length=100)
-
+    tutore = models.ForeignKey(Tutore, on_delete=models.CASCADE,  null=True)
     def __str__(self):
         return str(self.pacientparse)
+

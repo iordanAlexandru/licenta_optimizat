@@ -18,6 +18,8 @@ from django.urls import path
 from django.contrib.auth.views import LoginView
 from . import views
 
+
+
 app_name = "tutorial"
 urlpatterns = [
     path('update/', views.pacient_create_view, name='website_update'),
@@ -27,7 +29,10 @@ urlpatterns = [
     path('login/', views.loginPage, name='website_loginPage'),
     path('', views.index, name='website_index'),
     path('logout/', views.logoutPage, name='website_logoutPage'),
-    path('test/', views.resultsView, name='website_results'),
+    path('mood/', views.MoodFormView, name='website_mood_form'),
+    path('api/data/', views.get_data),
+    path('results/', views.mood_results.as_view()),
+    path('chartdata/', views.ChartDataAPI.as_view()),
 
  #   path('login/', LoginView.as_view(template_name='website/login.html'), name='website_login'),
 ]

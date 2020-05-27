@@ -1,14 +1,48 @@
-
-from .models import Pacient, Tutore, PacientParsing, DepressionParsing, AlzheimerParsing
+from django.core.mail import send_mail
+from django.http import JsonResponse
+from .models import Pacient, Tutore, PacientParsing, DepressionParsing, AlzheimerParsing, User
 from django.contrib.auth.models import Group
-
+from django.views.generic import View
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .decorators import restrict_unauthenticated_user, restrict_pacient_general_form, restrict_tutore_patient, tutore_and_admin_only
+from .decorators import restrict_unauthenticated_user, restrict_pacient_general_form, restrict_tutore_patient, tutore_and_admin_only, pacient_and_admin_only
 from .forms import UserRegisterForm, PacientForm, GeneralForm, DepressionMoodForm, AlzheimerForm, DiabetesForm,DepressionForm, AlzheimerMoodForm
 from django.contrib.auth import authenticate, login, logout
-
+from rest_framework.views import APIView
+from rest_framework.response import Response
 import numpy as np
+
+
+class mood_results(View):
+    def get(self, request, *args, **kwargs):
+        return render(request, 'website/mood_results.html')
+
+
+def get_data(request, *args, **kwargs):
+
+    data = {
+        "user": 'alex',
+        "nr_pacienti":111,
+    }
+    return JsonResponse(data)
+
+
+class ChartDataAPI(APIView):
+
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request, format=None):
+        print('aaaaaaaaaaaaaaaaaaaaaaaaaaa')
+        print(self.request.user)
+        users_no = User.objects.all().count()
+        labels = ["users", "blue", "yellow", "green", "purple","orange"]
+        default_items = [users_no, 34,21,32,15,22]
+        data = {
+            "labels":labels,
+            "default":default_items,
+        }
+        return Response(data)
 
 
 def index(request):
@@ -100,8 +134,8 @@ def pacient_create_view(request):
     else:
         form = PacientForm()
         form_user = UserRegisterForm
-
     return render(request, 'website/update.html', {'form': form, 'form_user':form_user})
+
 
 
 def parse_disease(request):
@@ -122,8 +156,8 @@ def parse_disease(request):
         form_disease = DepressionForm()
         if request.method == 'POST':
             form_disease = DepressionForm(request.POST)
-
     return form_disease
+
 
 def calculate(param, type, question=None):
     rat=0
@@ -163,6 +197,7 @@ def calculate_rating(request, fd, r1, r3): # e nevoie sa reverific boala pt rati
     rating = np.sum(rating1)+rating2_q1+rating2_q2
     return rating
 
+
 @restrict_pacient_general_form
 def pacient_general_form_view(request):
     if request.method == 'POST':
@@ -179,10 +214,8 @@ def pacient_general_form_view(request):
 
             instance.rating = calculate_rating(request,form_disease,r1,r3)
 
-            r1 = dict(form.fields['c1'].choices)[r1]
+
             r2 = form.cleaned_data['dorinta']
-            r2 = dict(form.fields['dorinta'].choices)[r2]
-            r3 = dict(form.fields['c3'].choices)[r3]
 
             instance.activitate = r1
             instance.dorinta = r2
@@ -209,7 +242,6 @@ def pacient_general_form_view(request):
         form_disease = parse_disease(request)
     return render(request, 'website/pacient_general_form.html', {'form': form, 'form_disease':form_disease})
 
-# multiple forms, one render | afectiune
 
 def calcul_mood_form(form, afectiune):
     rating = 0
@@ -220,6 +252,7 @@ def calcul_mood_form(form, afectiune):
         for key, value in form.cleaned_data.items():
             rating = rating + int(value)
     return rating
+
 
 
 def parse_mood_form(request, afectiune):
@@ -234,49 +267,82 @@ def parse_mood_form(request, afectiune):
             form = DepressionMoodForm(request.POST)
     return form
 
-def creation_factory(pac_pars, afectiune, rating):
+
+
+def Average(lst):
+    return sum(lst) / len(lst)
+
+
+def creation_factory(user, pac_pars, afectiune, rating):
+    p = Pacient.objects.get(user = user)
     if afectiune == 'alzheimer':
         try:
             instanta = AlzheimerParsing.objects.get(pacientparse=pac_pars)
             old_rating = instanta.disease_rating
             instanta.disease_rating = old_rating + ',' + str(rating)
+            total_ratings = instanta.disease_rating.split(',')
+            lista = []
+            for x in total_ratings:
+                lista.append(int(x))
+            media = Average(lista)
+            if len(total_ratings) % 3 == 0:
+                send_mail(
+                    'Mesaj informare pacient: ' + str(p),
+                    'Punctajele pacientului dvs sunt urmatoarele: ' + str(instanta.disease_rating) + '\nMedia pacientului este: ' + str(round(media))
+                    + '\n\n' +'Interpretarea Rezultatelor:\n5-8 – Creierul pacientului este intr-o stare buna.'
+                    ' Daca acesta se relaxeaza mai des si mentine o dieta sanatoasa,'
+                    ' creierul sau poate functiona mai bine\n'
+                    '9-12 – Creierul pacientului este in pericol. Verifica-i dieta urgent ! Acesta poate sa reduca '
+                    'pierderile de memorie cu vitamine, mancaruri care imbunatatesc functiile creierului, yoga, sport si meditatie.\n'
+                    '12-15 – Creierul pacientului functioneaza in gol. Ar trebui de urgenta sa vada un doctor. '
+                    'Acesta poate sa reduca pierderile de memorie alegand o dieta bogata in vitamine, sa mediteze, sa faca sport si sa se relaxeze mai des.\n'
+                                                                                                     ,
+                    'virtual_assistant@gov.com',
+                    ['bpiwbpiw1@gmail.com'],
+                    fail_silently=False,
+                )
             instanta.save()
         except AlzheimerParsing.DoesNotExist:
-            AlzheimerParsing.objects.create(pacientparse=pac_pars, disease_rating=rating)
+            AlzheimerParsing.objects.create(pacientparse=pac_pars, disease_rating=rating, tutore=p.tutore)
     elif afectiune == 'depresie':
         try:
             instanta = DepressionParsing.objects.get(pacientparse=pac_pars)
             old_rating = instanta.disease_rating
             instanta.disease_rating = old_rating + ',' + str(rating)
+            total_ratings = instanta.disease_rating.split(',')
+            if len(total_ratings) % 3 == 0:
+                print('!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                send_mail(
+                    'Mesaj informare pacient: ' + str(p),
+                    'Punctajele pacientului dvs sunt urmatoarele: ' + str(instanta.disease_rating) + '\nScor <= 15: Situatie grava\n'
+                                                                                                 'Scor: [16-25]: Situatie ingrijoratoare\n'
+                                                                                                 'Scor: [25-30]: Situatie acceptabila\n'
+                                                                                                 'Scor >30: Situatie foarte buna ',
+                    'virtual_assistant@gov.com',
+                    ['bpiwbpiw1@gmail.com'],
+                    fail_silently=False,
+                )
             instanta.save()
         except DepressionParsing.DoesNotExist:
-            DepressionParsing.objects.create(pacientparse=pac_pars, disease_rating=rating)
+            DepressionParsing.objects.create(pacientparse=pac_pars, disease_rating=rating, tutore = p.tutore)
 
-def resultsView(request):
+
+
+@pacient_and_admin_only
+def MoodFormView(request):
     if request.method == 'POST':
         pacient = Pacient.objects.get(user=request.user)
         form = parse_mood_form(request, pacient.afectiune)
         if form.is_valid():
             rating = calcul_mood_form(form, pacient.afectiune)
             pacient_parsing = PacientParsing.objects.get(pacient = pacient)
-            creation_factory(pacient_parsing,pacient.afectiune,rating)
+            creation_factory(request.user, pacient_parsing,pacient.afectiune,rating)
+
     else:
         pacient = Pacient.objects.get(user=request.user)
         form = parse_mood_form(request, pacient.afectiune)
-
     context = {
         'form': form,
         'afectiune': pacient.afectiune
     }
-    return render(request, 'website/results.html', context)
-
-
-
-# form = PacientForm(request.POST)
-# if form.is_valid():
-#     form.save()
-#     form = PacientForm()
-# context = {
-#     'form': form
-# }
-# return render(request, 'website/update.html', context)
+    return render(request, 'website/mood_form.html', context)

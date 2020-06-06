@@ -3,7 +3,11 @@
 {% block content %}
     {% if user.is_authenticated %}
         <h3>Bine ai venit, {{ request.user.username|title }} !</h3>
-        Momentan nu ai inregistrat niciun pacient. Incepe acum !<br><br>
+
+        {% if nr_pac >= 5 %}
+            Ne pare rău, dar ai introdus deja 5 pacienți
+        {% else %}
+        Momentan ai inregistrati {{ nr_pac }} pacient(i) ! Poti avea maximum 5 pacienti<br><br>
 
         <form action='.' method='POST'>
             {% csrf_token %}
@@ -12,6 +16,7 @@
             {{ form|crispy }}
             <input type='submit' value='Save'/>
         </form>
+        {% endif %}
     {% else %}
         <p>Nu esti logat ! Pentru a te loga, apasa pe link-ul de mai jos</p>
         <a href="{% url 'tutorial:website_loginPage' %}">login</a>

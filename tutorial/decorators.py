@@ -58,9 +58,27 @@ def pacient_and_admin_only(view_func):
             return redirect('tutorial:website_index')
     return wrapper_func
 
+def restrict_authenticated(view_func):
+    def wrapper_func(request, *args, **kwargs):
+        user = request.user
+        if user.is_authenticated:
+            return redirect('tutorial:website_index')
+        else:
+            return view_func(request, *args, **kwargs)
+    return wrapper_func
 
+def restrict_pacient_mood(view_func):
+    def wrapper_func(request, *args, **kwargs):
+        user = request.user
+        pacient = Pacient.objects.get(user = user)
+        flag = pacient.flag
+        if flag == False:
+            return redirect('tutorial:website_index')
+        else:
+            return view_func(request, *args, **kwargs)
+    return wrapper_func
 
-def restrict_tutore_patient(view_func):
+def restrict_tutore_insert_patient(view_func):
     def wrapper_func(request, *args, **kwargs):
         username_get = request.user
         selected_user = Tutore.objects.get(user = username_get)

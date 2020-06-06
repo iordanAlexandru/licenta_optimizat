@@ -1,6 +1,8 @@
+{% extends 'website/base.html' %}
+
 <!DOCTYPE html>
-<html>
-<head>
+
+{% block content %}
 <style>
 .button {
   background-color: #ddd; /* Green */
@@ -36,8 +38,7 @@
 
 </center>
 
-
-<h1 class="project_name">What can our Alexa version do for you?</h1>
+<h1 class="project_name">What can our Alexa (alpha) version do for you?</h1>
     <ul>
 <ol>
   <li>Monitorize your illness and provide valuable feedback</li>
@@ -48,23 +49,23 @@
   <li>It's always listening and waiting for the triggering keyword: "alexa"</li>
   <li>Can bring the individual up to date with the latest news in all over the world</li>
   <li>Plan a google calendar event and we set it up accordingly</li>
-
-  <li>Discussion module: the chat can not be more real than this. Get feedback based on what you say</li>
-  <li>Sentiment recognition. We take care of our clients.</li>
+  <li>Wikipedia module: ask anything about anything</li>
+  <li>Movie recommendation + scraping the best movies out there for you</li>
+  <li>Discussion module: the chat can not be more real than this.
+                        <ol><li> Get feedback based on what you say</li>
+                        <li>Sentiment recognition. We take care of our clients.</li>
+                        <li> Intelligent Google results scraping when there's a problem affecting you</li>
+                        <li> No repeated solutions ! Get always diversed information</li></ol></li>
   <li>It can intelligently surf the web for you (keyword detection)</li>
-
   <li>It can open various browser(Chrome, Mozilla), applications (Word, Excel, etc), search for a song(On Youtube)</li>
 </ul>
 </li>
 </ol>
 </ul>
 
-</body>
 
 
 
 
 
-
-
-</html>
+{% endblock content %}

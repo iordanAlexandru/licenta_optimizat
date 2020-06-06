@@ -5,7 +5,7 @@ from django.contrib.auth.models import Group
 from django.views.generic import View
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .decorators import restrict_unauthenticated_user, restrict_pacient_general_form, restrict_tutore_patient, tutore_and_admin_only, pacient_and_admin_only
+from .decorators import restrict_unauthenticated_user, restrict_pacient_general_form, restrict_tutore_insert_patient, tutore_and_admin_only, pacient_and_admin_only, restrict_authenticated, restrict_pacient_mood
 from .forms import UserRegisterForm, PacientForm, GeneralForm, DepressionMoodForm, AlzheimerForm, DiabetesForm,DepressionForm, AlzheimerMoodForm
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.views import APIView
@@ -58,11 +58,10 @@ def logoutPage(request):
     return redirect('tutorial:website_index')
 
 
-@restrict_unauthenticated_user
 def about(request):
     return render(request, 'website/about.html', {'title': 'About'})
 
-
+@restrict_authenticated
 def registerPage(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
@@ -79,7 +78,7 @@ def registerPage(request):
         form = UserRegisterForm()
     return render(request, 'website/register.html', {'form': form})
 
-
+@restrict_authenticated
 def loginPage(request):
     if request.method=='POST':
         username = request.POST.get('username')
@@ -103,8 +102,10 @@ def loginPage(request):
 
 @restrict_unauthenticated_user
 @tutore_and_admin_only
-@restrict_tutore_patient
+@restrict_tutore_insert_patient
 def pacient_create_view(request):
+    instanta = Tutore.objects.get(user = request.user)
+    nr_pac = instanta.nr_pacienti
     if request.method == 'POST':
         form = PacientForm(request.POST)
         form_user = UserRegisterForm(request.POST)
@@ -134,7 +135,7 @@ def pacient_create_view(request):
     else:
         form = PacientForm()
         form_user = UserRegisterForm
-    return render(request, 'website/update.html', {'form': form, 'form_user':form_user})
+    return render(request, 'website/update.html', {'form': form, 'form_user':form_user, 'nr_pac':nr_pac})
 
 
 
@@ -197,7 +198,7 @@ def calculate_rating(request, fd, r1, r3): # e nevoie sa reverific boala pt rati
     rating = np.sum(rating1)+rating2_q1+rating2_q2
     return rating
 
-
+@pacient_and_admin_only
 @restrict_pacient_general_form
 def pacient_general_form_view(request):
     if request.method == 'POST':
@@ -310,14 +311,18 @@ def creation_factory(user, pac_pars, afectiune, rating):
             old_rating = instanta.disease_rating
             instanta.disease_rating = old_rating + ',' + str(rating)
             total_ratings = instanta.disease_rating.split(',')
+            lista = []
+            for x in total_ratings:
+                lista.append(int(x))
+            media = Average(lista)
             if len(total_ratings) % 3 == 0:
-                print('!!!!!!!!!!!!!!!!!!!!!!!!!!!')
                 send_mail(
                     'Mesaj informare pacient: ' + str(p),
-                    'Punctajele pacientului dvs sunt urmatoarele: ' + str(instanta.disease_rating) + '\nScor <= 15: Situatie grava\n'
-                                                                                                 'Scor: [16-25]: Situatie ingrijoratoare\n'
-                                                                                                 'Scor: [25-30]: Situatie acceptabila\n'
-                                                                                                 'Scor >30: Situatie foarte buna ',
+                    'Punctajele pacientului dvs sunt urmatoarele: ' + str(instanta.disease_rating) + '\nMedia puntajelor este ' + str(round(media)) + '\nInterpretarea rezultatelor:\nScor 1-4: Forme de depresie minima\n'
+                                                                                                 'Scor 5-9: Depresie usoara\n'
+                                                                                                 'Scor 10-14: Depresie moderata\n'
+                                                                                                 'Scor 15-19: Depresie moderata severa\n '
+                                                                                                     'Scor 20-27: Depresie severa\n',
                     'virtual_assistant@gov.com',
                     ['bpiwbpiw1@gmail.com'],
                     fail_silently=False,
@@ -327,7 +332,7 @@ def creation_factory(user, pac_pars, afectiune, rating):
             DepressionParsing.objects.create(pacientparse=pac_pars, disease_rating=rating, tutore = p.tutore)
 
 
-
+@restrict_pacient_mood
 @pacient_and_admin_only
 def MoodFormView(request):
     if request.method == 'POST':

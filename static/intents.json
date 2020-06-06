@@ -25,7 +25,7 @@
          "context": [""]
         },
         {"tag": "web_search",
-         "patterns": ["I would like to know more about", "I want to search for", "Can you search about", "Can you search for"],
+         "patterns": [ "I want to search for", "Can you search about", "Can you search for"],
          "responses": ["Sure, I am opening the browser now", "Okie doki. I am going to open the browser","Sure thing, searching the web now"],
          "context": [""]
         },
@@ -40,7 +40,7 @@
          "context": [""]
         },
         {"tag": "youtube",
-         "patterns": ["I would like to play some music", "I want to listen to music", "Find a song for me", "Search on youtube"],
+         "patterns": ["I would like to play some music", "I want to listen to music", "Find a song for me", "Search on youtube","search for a song","search a song for me"],
          "responses": ["Sure, what do you want to search for?", "Okie doki. What song?","Sure thing, tell me the song name?"],
          "context": [""]
         },
@@ -80,18 +80,53 @@
         "context": [" "]
         },
         { "tag": "yes",
-        "patterns": ["yes", "of course", "oui","sure","affirmative","absolutely","yeah"],
-        "responses":[],
+        "patterns": ["yes please", "of course", "oui","sure","affirmative","absolutely","yeah"],
+        "responses":[""],
         "context": [" "]
         },
         { "tag": "no",
         "patterns": ["no","never","negative","by no means","absolutely not","not at all"],
-        "responses":[],
+        "responses":[""],
         "context": [" "]
         },
         { "tag": "discussion",
         "patterns": ["I would like to discuss something with you", "I want to have a discussion", "let's discuss something", "i want you to listen to me" ],
         "responses":["Sure, we can talk about anything", "I am open to have any kind of conversation", "Sure thing, i am going to be all ears"],
+        "context": [" "]
+        },
+        { "tag": "knowledge",
+        "patterns": ["I would like to know more about", "What is", "Tell me what you know about", "who was","I would like to know more about"],
+        "responses":[""],
+        "context": [" "]
+        },
+        { "tag": "movie",
+        "patterns": ["i want to see a movie", "I want to watch a movie", "tell me a good movie", "do you know any good movies?"],
+        "responses":[""],
+        "context": [" "]
+        },
+        { "tag": "horror",
+        "patterns": ["Best horror movies", "good horror movie", "horror", "any good horror movie", "tell me a good horror movie"],
+        "responses":[""],
+        "context": [" "]
+        },
+        { "tag": "action",
+        "patterns": ["Best action movies", "good action movie", "action", "any good action movie", "tell me a good action movie"],
+        "responses":[""],
+        "context": [" "]
+        },
+        { "tag": "comedy",
+        "patterns": ["Best comedy movies", "good comedy movie", "comedy", "any good comedy movie", "tell me a good comedy movie"],
+        "responses":[""],
+        "context": [" "]
+        },
+        { "tag": "thriller",
+        "patterns": ["Best thriller movies", "good thriller movie", "thriller", "any good thriller movie", "tell me a good thriller movie"],
+        "responses":[""],
+        "context": [" "]
+        },
+        { "tag": "popular",
+        "patterns": ["Best popular movies", "good popular movie", "popular movies", "any good popular movies", "tell me a good popular movie"],
+        "responses":[""],
         "context": [" "]
         }
 ]

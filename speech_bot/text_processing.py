@@ -4,7 +4,7 @@ import time
 import requests
 from django.shortcuts import render
 from newsapi import NewsApiClient
-#from key import b71542370a6247d493860e6b01d0d713
+# from key import b71542370a6247d493860e6b01d0d713
 import datetime as dt
 import pandas as pd
 import nltk
@@ -25,26 +25,26 @@ import pickle
 import numpy as np
 from bs4 import BeautifulSoup
 from tensorflow.keras.models import load_model
+
 model = load_model('static/chatbot_model.h5')
 import json
 import random
-from tutorial.models import PacientParsing, Pacient,AlzheimerParsing,DepressionParsing,DiabetesParsing, PacientDetails
+from tutorial.models import PacientParsing, Pacient, AlzheimerParsing, DepressionParsing, DiabetesParsing, \
+    PacientDetails
 from datetime import datetime, timedelta
 import datefinder
+import wikipedia
+from tmdbv3api import TMDb, Discover
 
-
-
-
-
+tmdb = TMDb()
+tmdb.api_key = '530ff67defeb9213256896802945b0d2'
 
 intents = json.loads(open('static/intents.json').read())
-words = pickle.load(open('static/words.pkl','rb'))
-classes = pickle.load(open('static/classes.pkl','rb'))
-
-
-
+words = pickle.load(open('static/words.pkl', 'rb'))
+classes = pickle.load(open('static/classes.pkl', 'rb'))
 
 num = 1
+
 
 def assistant_speaks(output):
     global num
@@ -66,7 +66,6 @@ def assistant_speaks(output):
     # playsound.playsound(mp3_fp)
     playsound.playsound(file, True)
     os.remove(file)
-
 
 
 def search_web(input):
@@ -132,7 +131,9 @@ def parse_stopwords(text):
     text_split = text.split(' ')
     result = [word for word in text_split if word not in stopwords]
     result = ' '.join(result)
-    return 'google ' + result
+    assistant_speaks('Opening Firefox')
+    return result
+    # search_web('google '+result)
 
 
 def clean_up_sentence(sentence):
@@ -140,28 +141,30 @@ def clean_up_sentence(sentence):
     sentence_words = [lemmatizer.lemmatize(word.lower()) for word in sentence_words]
     return sentence_words
 
+
 # return bag of words array: 0 or 1 for each word in the bag that exists in the sentence
 
 def bow(sentence, words, show_details=True):
     # tokenize the pattern
     sentence_words = clean_up_sentence(sentence)
     # bag of words - matrix of N words, vocabulary matrix
-    bag = [0]*len(words)
+    bag = [0] * len(words)
     for s in sentence_words:
-        for i,w in enumerate(words):
+        for i, w in enumerate(words):
             if w == s:
                 # assign 1 if current word is in the vocabulary position
                 bag[i] = 1
                 if show_details:
-                    print ("found in bag: %s" % w)
-    return(np.array(bag))
+                    print("found in bag: %s" % w)
+    return (np.array(bag))
+
 
 def predict_class(sentence, model):
     # filter out predictions below a threshold
-    p = bow(sentence, words,show_details=False)
+    p = bow(sentence, words, show_details=False)
     res = model.predict(np.array([p]))[0]
     ERROR_THRESHOLD = 0.25
-    results = [[i,r] for i,r in enumerate(res) if r>ERROR_THRESHOLD]
+    results = [[i, r] for i, r in enumerate(res) if r > ERROR_THRESHOLD]
     # sort by strength of probability
     results.sort(key=lambda x: x[1], reverse=True)
     return_list = []
@@ -169,14 +172,16 @@ def predict_class(sentence, model):
         return_list.append({"intent": classes[r[0]], "probability": str(r[1])})
     return return_list
 
+
 def getResponse(ints, intents_json):
     tag = ints[0]['intent']
     list_of_intents = intents_json['intents']
     for i in list_of_intents:
-        if(i['tag']== tag):
+        if (i['tag'] == tag):
             result = random.choice(i['responses'])
             break
     return result
+
 
 def chatbot_response(msg):
     ints = predict_class(msg, model)
@@ -194,8 +199,8 @@ def get_audio():
     print("Stop.")
     try:
         text = r.recognize_google(audio, language='en-US')
-        res, intent = chatbot_response(text)
         print("You : ", text)
+        res, intent = chatbot_response(text)
         if intent == 'goodbye':
             assistant_speaks(res)
             sys.exit()
@@ -203,6 +208,7 @@ def get_audio():
     except:
         assistant_speaks("Could not understand your audio, PLease try again!")
         sys.exit()
+
 
 def parse_details(ans):
     result = ''
@@ -213,22 +219,124 @@ def parse_details(ans):
     return result
 
 
+def parse_text(input, keyword):
+    if keyword in input:
+        ans = input
+        indx = ans.split().index(keyword)
+        query = ans.split()[indx + 1:]
+        result = wikipedia.page(' '.join(query))
+        assistant_speaks(result.title)
+        assistant_speaks(result.summary[0:400])
+        assistant_speaks('Do you want me to continue?')
+        ans = get_audio()
+        res, intent = chatbot_response(ans)
+        if intent == 'yes':
+            assistant_speaks(result.summary[400:])
+        elif intent == 'no':
+            assistant_speaks('Exiting wikipedia module')
+    else:
+        suggestion = wikipedia.suggest(input)
+        result = wikipedia.page(suggestion)
+        assistant_speaks(result.title)
+        assistant_speaks(result.summary[0:400])
 
-def process_text(input, intent, request):
-    pacient = Pacient.objects.get(user=request.user)
-    pac_pars = PacientParsing.objects.get(pacient=pacient)
+
+def parse_movies(genre_id, discover, movieInstance, genre_string):
+    assistant_speaks("The top 3 best " + genre_string + " movies are the following")
+    movie = discover.discover_movies({
+        'with_genres': genre_id,
+        'sort_by': 'vote_average.desc'
+    })
+    assistant_speaks('I will read the title and the description')
+    for mov in movie[0:3]:
+        mov = str(mov)
+        searchMovie = movieInstance.search(mov)
+        result = searchMovie[0]
+        assistant_speaks(mov)
+        assistant_speaks('description is ' + result.overview)
+    assistant_speaks('exiting movie module')
+
+
+def process_text(input, intent, request=None):
     try:
+        if intent == 'youtube':
+            assistant_speaks('Sure. Tell me what do you want to search for')
+            ans = get_audio()
+            result = parse_stopwords(ans)
+            search_web('youtube ' +result)
+        if intent == 'knowledge':
+            if 'about' in input:
+                parse_text(input, 'about')
+            if 'what is' in input:
+                parse_text(input, 'is')
+            if 'who was' in input:
+                parse_text(input, 'was')
         if intent == 'web_search':
             if 'about' in input:
                 ans = input
                 indx = ans.split().index('about')
                 query = ans.split()[indx + 1:]
-                search_web('google ' + query)
+                string_query = ' '.join(query)
+                result = parse_stopwords(string_query)
+                search_web('google ' + result)
             if 'for' in input:
                 ans = input
                 indx = ans.split().index('for')
                 query = ans.split()[indx + 1:]
-                search_web('google ' + query)
+                string_query = ' '.join(query)
+                result = parse_stopwords(string_query)
+                search_web('google ' + result)
+
+        movie_list_intents = ['movie', 'horror', 'action', 'comedy', 'popular', 'thriller']
+        if intent in movie_list_intents:
+            from tmdbv3api import Movie
+
+            movie = Movie()
+            discover = Discover()
+            if intent == 'popular':
+                pop_movie = discover.discover_movies({
+                    'sort_by': 'popularity.desc'
+                })
+                assistant_speaks("The most popular 5 movies are the following")
+                pop_movies = ", ".join(str(x) for x in pop_movie[0:5])
+                assistant_speaks(pop_movies)
+            if intent == 'horror':
+                parse_movies(27, discover, movie, 'horror')
+            if intent == 'action':
+                parse_movies(28, discover, movie, 'action')
+            if intent == 'comedy':
+                parse_movies(35, discover, movie, 'comedy')
+            if intent == 'thriller':
+                parse_movies(53, discover, movie, 'thriller')
+            if intent == 'movie':
+                assistant_speaks('Do you want a movie recommendation?')
+                ans = get_audio()
+                if 'yes' in ans:
+                    pacient = Pacient.objects.get(user=request.user)
+
+                    pac_details = PacientDetails.objects.get(pacient=pacient)
+                    fav_movie = pac_details.fav_movie
+                    search_movie = movie.search(fav_movie)
+                    assistant_speaks('I will read top three recommended movies based on your favorite movie')
+                    res = search_movie[0]
+                    recommendations = movie.recommendations(movie_id=res.id)
+                    cnt = 0
+                    for recommendation in recommendations:
+                        if cnt >= 3:
+                            break
+                        else:
+                            assistant_speaks(recommendation.title)
+                            assistant_speaks(recommendation.overview)
+                        cnt += 1
+                else:
+                    assistant_speaks(
+                        'I can give you the top movies based on a genre. Just tell me what are you looking for')
+                    ans = get_audio()
+                    res, ints = chatbot_response(ans)
+                    process_text(ans, ints)
+
+        pacient = Pacient.objects.get(user=request.user)
+        pac_pars = PacientParsing.objects.get(pacient=pacient)
         if intent == 'event':
             from googleapiclient.discovery import build
             from google_auth_oauthlib.flow import InstalledAppFlow
@@ -243,8 +351,6 @@ def process_text(input, intent, request):
             calendar_id = calendarlist['items'][0]['id']
             result = service.events().list(calendarId=calendar_id, timeZone="Europe/Bucharest").execute()
 
-
-            assistant_speaks("What date should I plan the event?")
             timp_event = get_audio()
 
             assistant_speaks("What about the name of the event?")
@@ -252,28 +358,33 @@ def process_text(input, intent, request):
 
             assistant_speaks("would you like to add a description?")
             ans = get_audio()
-
-            if "yes" in ans:
+            sub_resp, sub_intent = chatbot_response(ans)
+            if sub_intent == 'yes':
                 assistant_speaks("please tell me the description")
                 desc = get_audio()
                 assistant_speaks("should i add a location too?")
                 ans = get_audio()
-                if "yes" in ans:
+                sub_resp, sub_intent = chatbot_response(ans)
+                if sub_intent == 'yes':
                     assistant_speaks("Go ahead, tell me the location")
                     location = get_audio()
-                    create_event(service,timp_event, name, desc,location)
-                elif "no" in ans:
-                    create_event(service,timp_event, name, desc)
-            elif "no" in ans:
-                create_event(service,timp_event, name)
+                    create_event(service, timp_event, name,1, desc, location)
+                elif sub_intent == 'no':
+                    create_event(service, timp_event, name,1, desc)
+            elif sub_intent == 'no':
+                create_event(service, timp_event, name)
             assistant_speaks('Event ' + name + ' created.')
         if intent == 'web':
             ans = get_audio()
-            search_web('google' + ans)
+            result = parse_stopwords(ans)
+            search_web('google '+result)
         if intent == 'discussion':
             assistant_speaks('Is there a certain topic you would like to discuss?')
             ans = get_audio()
-            if 'no' in ans:
+            print(ans)
+            sub_resp, sub_intent = chatbot_response(ans)
+            print(sub_intent)
+            if sub_intent == 'no':
                 assistant_speaks('Then how about you tell me more about yourself?')
                 try:
                     pac_details = PacientDetails.objects.get(pacient=pacient)
@@ -287,35 +398,35 @@ def process_text(input, intent, request):
                         print(ans)
                         pac_details.fav_activity = ans
                         pac_details.save()
-                if pac_details.fav_movie  == '':
+                if pac_details.fav_movie == '':
                     assistant_speaks('what about your favorite movie?')
                     ans = get_audio()
                     if "don't" not in ans or 'no' not in ans:
                         ans = parse_details(ans)
                         pac_details.fav_movie = ans
                         pac_details.save()
-                if pac_details.fav_game  == '':
+                if pac_details.fav_game == '':
                     assistant_speaks('Tell me your favorite game')
                     ans = get_audio()
                     if "don't" not in ans or 'no' not in ans:
                         ans = parse_details(ans)
                         pac_details.fav_game = ans
                         pac_details.save()
-                if pac_details.fav_passion  == '':
+                if pac_details.fav_passion == '':
                     assistant_speaks('Do you have a favorite passion?')
                     ans = get_audio()
                     if "don't" not in ans or 'no' not in ans:
                         ans = parse_details(ans)
                         pac_details.fav_passion = ans
                         pac_details.save()
-                if pac_details.fav_song  == '':
+                if pac_details.fav_song == '':
                     assistant_speaks('What is your favorite song?')
                     ans = get_audio()
                     if "don't" not in ans or 'no' not in ans:
                         ans = parse_details(ans)
                         pac_details.fav_song = ans
                         pac_details.save()
-                if pac_details.fav_book  == '':
+                if pac_details.fav_book == '':
                     assistant_speaks('And your favorite book is?')
                     ans = get_audio()
                     if "don't" not in ans or 'no' not in ans:
@@ -327,7 +438,9 @@ def process_text(input, intent, request):
                 list = []
                 happy_list = ['That sounds great !', 'Wow, I am glad for you', 'Good job!', 'This sounds awesome']
                 neutral_list = ['Okay, continue', 'Understood', 'What next?', 'Is there something more?']
-                sad_list = ['What is the specific reason that made you feel this way?','Can you please tell me what is the root of the problem?','what disturbed you that much?']
+                sad_list = ['What is the specific reason that made you feel this way? Please keep it short',
+                            'Can you please tell me what is the root of the problem? Please keep it short',
+                            'what disturbed you that much? Please keep it short']
                 with sr.Microphone() as source:
                     while (1):
                         try:
@@ -336,35 +449,35 @@ def process_text(input, intent, request):
                             text = r.recognize_google(audio, language='en-US')
                             blob1 = TextBlob(text)
                             blob1 = blob1.correct()
+                            text = text.lower()
                             print(format(blob1.sentiment))
+                            if "that's it" in text:
+                                break
                             if blob1.polarity < 0:
                                 assistant_speaks(random.choice(sad_list))
                                 motiv = get_audio()
                                 pac_pars._negative_problems += motiv + '\n'
                                 pac_pars.contor_mesaje += 1
-                                if pac_pars.contor_mesaje%3==0:
+                                if pac_pars.contor_mesaje % 3 == 0:
                                     pac_pars.contor_mesaje = 0
                                     send_mail(
-                                            'Mesaj informare pacient ' + str(pacient),
-                                            'Urmatoarele probleme par sa-l afecteze pe pacient: ' + pac_pars._negative_problems,
-                                            'virtual_assistant@gov.com',
-                                            ['bpiwbpiw1@gmail.com'],
-                                            fail_silently=False,
+                                        'Mesaj informare pacient ' + str(pacient),
+                                        'Urmatoarele probleme par sa-l afecteze pe pacient: ' + pac_pars._negative_problems,
+                                        'virtual_assistant@gov.com',
+                                        ['bpiwbpiw1@gmail.com'],
+                                        fail_silently=False,
                                     )
                                 list.append(motiv)
                                 pac_pars.save()
                             if blob1.polarity > 0.5:
                                 assistant_speaks(random.choice(happy_list))
-                            elif blob1.polarity<=0.5 and blob1.polarity>=0:
+                            elif blob1.polarity <= 0.5 and blob1.polarity >= 0:
                                 assistant_speaks(random.choice(neutral_list))
-                            text = text.lower()
-                            print('You: ' + text)
-                            if "that's it" in text:
-                                break
                         except:
                             continue
+
                 motiv = random.choice(list)
-                research_later = "what+to+do+when+"+motiv
+                research_later = "what+to+do+when+" + motiv
                 ua = UserAgent()
                 google_url = "https://www.google.com/search?q=" + research_later
                 response = requests.get(google_url, {"User-Agent": ua.random})
@@ -389,7 +502,6 @@ def process_text(input, intent, request):
                     # Next loop if one element is not present
                     except:
                         continue
-
                 to_remove = []
                 clean_links = []
                 for i, l in enumerate(links):
@@ -400,35 +512,38 @@ def process_text(input, intent, request):
                         to_remove.append(i)
                         continue
                     clean_links.append(clean.group(1))
-
                 # Remove the corresponding titles & descriptions
-                for x in to_remove:
-                    del titles[x]
-                    del descriptions[x]
-                random_seed = random.randint(1,len(titles)-1)
+                # for x in to_remove:
+                #     print(titles[x])
+                #     print(descriptions[x])
+                #     del titles[x]
+                #     del descriptions[x]
+                random_seed = random.randint(0, 3)
                 print('rand_seed: ')
                 print(random_seed)
+                print('titles: ' + str(len(titles)))
+                print('links: ' + str(len(clean_links)))
                 assistant_speaks("I have found something regarding the problems you have just told me")
                 assistant_speaks("The article title is called")
                 assistant_speaks(titles[random_seed])
-                if not 'No text' in description[random_seed]:
-                    assistant_speaks("the description of the article is the following")
-                    assistant_speaks(description[random_seed])
                 assistant_speaks("Do you want me to open the link for you?")
                 ans = get_audio()
-                if 'yes' in ans:
+                sub_resp, sub_intent = chatbot_response(ans)
+                if sub_intent == 'yes':
                     driver = webdriver.Firefox()
                     driver.implicitly_wait(1)
                     driver.maximize_window()
                     driver.get(clean_links[random_seed])
-                print(clean_links[0])
-                print(titles[0])
-                print(description[0])
+                    assistant_speaks('I have opened the browser for you. Exiting discussion module')
+                else:
+                    return
+
         if intent == 'news':
             assistant_speaks("Would you like the news on a specific subject?")
             ans = get_audio()
             newsapi = NewsApiClient(api_key='b71542370a6247d493860e6b01d0d713')
-            if 'yes' in ans:
+            sub_resp, sub_intent = chatbot_response(ans)
+            if sub_intent == 'yes':
                 assistant_speaks('What would you like me to search for? Please be as specific as you can.')
                 ans = get_audio()
                 data = newsapi.get_everything(q=ans, language='en', page_size=5)
@@ -450,7 +565,8 @@ def process_text(input, intent, request):
                         assistant_speaks(
                             'I can open the webpage which contains the article source. Do you want me to do that? ')
                         ans = get_audio()
-                        if 'yes' in ans:
+                        sub_resp, sub_intent = chatbot_response(ans)
+                        if sub_intent == 'yes':
                             driver = webdriver.Firefox()
                             driver.implicitly_wait(1)
                             driver.maximize_window()
@@ -471,15 +587,16 @@ def process_text(input, intent, request):
                                             return
                                     except:
                                         continue
-                        elif 'no' in ans:
+                        elif sub_intent == 'no':
                             assistant_speaks('would you like me to continue reading the next articles?')
                             ans = get_audio()
-                            if 'yes' in ans:
+                            sub_resp, sub_intent = chatbot_response(ans)
+                            if sub_intent == 'yes':
                                 continue
-                            elif 'no' in ans:
-                                assistant_speaks('If you want to find out more, just let me know')
+                            elif sub_intent == 'no':
+                                assistant_speaks('If you want to find out more, just let me know. Exiting news module')
                                 break
-            elif 'no' in ans:
+            elif sub_intent == 'no':
                 assistant_speaks('Alright, i am going to search for the top headlines')
                 url = ('http://newsapi.org/v2/top-headlines?'
                        'country=us&'
@@ -503,17 +620,19 @@ def process_text(input, intent, request):
                         assistant_speaks('I can open the webpage which contains the article source. Do you want me'
                                          ' to do that? ')
                         ans = get_audio()
-                        if 'yes' in ans:
+                        sub_resp, sub_intent = chatbot_response(ans)
+                        if sub_intent == 'yes':
                             driver = webdriver.Firefox()
                             driver.implicitly_wait(1)
                             driver.maximize_window()
                             driver.get(url)
-                        elif 'no' in ans:
+                        elif sub_intent == 'no':
                             assistant_speaks('would you like me to continue reading the next articles?')
                             ans = get_audio()
-                            if 'yes' in ans:
+                            sub_resp, sub_intent = chatbot_response(ans)
+                            if sub_intent == 'yes':
                                 return
-                            elif 'no' in ans:
+                            elif sub_intent == 'no':
                                 assistant_speaks('If you want to find out more, just let me know')
                                 break
                     elif 'exit' in ans:
@@ -522,7 +641,6 @@ def process_text(input, intent, request):
         print(e)
         assistant_speaks("I don't understand, Can you please repeat?")
         ans = get_audio()
-
 
 
 def create_event(service, start_time_str, summary, duration=1, description=None, location=None):

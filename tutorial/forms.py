@@ -179,10 +179,10 @@ class DepressionForm(forms.ModelForm):
         ]
 
 alegere_depr_mood= [
-    ('1', 'Deloc'),
-    ('2', 'Cateva zile'),
-    ('3','Mai mult decat jumatate din zile'),
-    ('4','Aproape in fiecare zi'),
+    ('0', 'Deloc'),
+    ('1', 'Cateva zile'),
+    ('2','Mai mult decat jumatate din zile'),
+    ('3','Aproape in fiecare zi'),
     ]
 
 class DepressionMoodForm(forms.ModelForm):

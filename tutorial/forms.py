@@ -23,7 +23,7 @@ class TutoreForm(forms.ModelForm):
 
 selectie_boli= [
     ('alzheimer', 'Alzheimer'),
-    ('diabet', 'Diabet'),
+    ('singuratate', 'Singuratate'),
     ('depresie', 'Depresie'),
     ]
 
@@ -84,7 +84,7 @@ class GeneralForm(forms.ModelForm):
 
 alegere_greutate= [
     ('1', 'Nu'),
-    ('2', 'Nu stiu'),
+    ('2', 'Uneori'),
     ('3','Da'),
     ]
 alegere_stres= [
@@ -94,16 +94,16 @@ alegere_stres= [
     ]
 alegere_dieta= [
     ('1', 'Da'),
-    ('2', 'Cateodata mai mananc si ce nu trebuie'),
+    ('2', 'Uneori'),
     ('3','Nu'),
     ]
 
-class DiabetesForm(forms.ModelForm):
-    c4 = forms.ChoiceField(label='Esti supraponderal/a?', choices=alegere_greutate,
+class LonelinessForm(forms.ModelForm):
+    c4 = forms.ChoiceField(label='De obicei ai încredere în tine?', choices=alegere_greutate,
                            widget=forms.RadioSelect)
-    c5 = forms.ChoiceField(label='Esti o persoana care se streseaza usor?', choices=alegere_stres,
+    c5 = forms.ChoiceField(label='Te simți constant obosit?', choices=alegere_stres,
                            widget=forms.RadioSelect)
-    c6 = forms.ChoiceField(label='Ai o dieta bine pusa la punct?', choices=alegere_dieta,
+    c6 = forms.ChoiceField(label='Ții mult la lucrurile materiale?', choices=alegere_dieta,
                            widget=forms.RadioSelect)
     class Meta:
         model = Pacient

@@ -91,7 +91,7 @@ class AlzheimerParsing(models.Model):
         return str(self.pacientparse)
 
 
-class DiabetesParsing(models.Model):
+class LonelinessParsing(models.Model):
     pacientparse = models.ForeignKey(PacientParsing, on_delete=models.CASCADE)
     disease_rating = models.CharField(default=0, validators=[int_list_validator], max_length=100)
     tutore = models.ForeignKey(Tutore, on_delete=models.CASCADE,  null=True)

@@ -29,7 +29,7 @@ from tensorflow.keras.models import load_model
 model = load_model('static/chatbot_model.h5')
 import json
 import random
-from tutorial.models import PacientParsing, Pacient, AlzheimerParsing, DepressionParsing, DiabetesParsing, \
+from tutorial.models import PacientParsing, Pacient, AlzheimerParsing, DepressionParsing, LonelinessParsing, \
     PacientDetails
 from datetime import datetime, timedelta
 import datefinder

@@ -6,7 +6,7 @@ from django.views.generic import View
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .decorators import restrict_unauthenticated_user, restrict_pacient_general_form, restrict_tutore_insert_patient, tutore_and_admin_only, pacient_and_admin_only, restrict_authenticated, restrict_pacient_mood
-from .forms import UserRegisterForm, PacientForm, GeneralForm, DepressionMoodForm, AlzheimerForm, DiabetesForm,DepressionForm, AlzheimerMoodForm
+from .forms import UserRegisterForm, PacientForm, GeneralForm, DepressionMoodForm, AlzheimerForm, LonelinessForm,DepressionForm, AlzheimerMoodForm
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -148,10 +148,10 @@ def parse_disease(request):
         if request.method == 'POST':
             form_disease = AlzheimerForm(request.POST)
 
-    elif str(date_pac.afectiune) == 'diabet':
-        form_disease = DiabetesForm()
+    elif str(date_pac.afectiune) == 'singuratate':
+        form_disease = LonelinessForm()
         if request.method == 'POST':
-            form_disease = DiabetesForm(request.POST)
+            form_disease = LonelinessForm(request.POST)
 
     elif str(date_pac.afectiune) == 'depresie':
         form_disease = DepressionForm()

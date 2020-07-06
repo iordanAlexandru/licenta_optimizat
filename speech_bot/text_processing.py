@@ -13,8 +13,6 @@ import speech_recognition as sr  # importing speech recognition package from goo
 # from pygame import mixer
 import playsound  # to play saved mp3 file
 from gtts import gTTS  # google text to speech
-import os  # to save/open files
-import wolframalpha  # to calculate strings into formula, its a website which provides api, 100 times per day
 from selenium import webdriver  # to control browser operations
 from textblob import TextBlob
 from textblob import Word
@@ -24,6 +22,8 @@ lemmatizer = WordNetLemmatizer()
 import pickle
 import numpy as np
 from bs4 import BeautifulSoup
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from tensorflow.keras.models import load_model
 
 model = load_model('static/chatbot_model.h5')
@@ -143,11 +143,15 @@ def clean_up_sentence(sentence):
 
 
 # return bag of words array: 0 or 1 for each word in the bag that exists in the sentence
-
+# we dont really care what the words mean / the frequency so 0 and 1 is the best for intent recognition
+#forma cuvintelor din bag este urmatoarea:
+#text = "this is a test to see if this test will work is is test a a"
+#{1: 2, 2: 3, 3: 3, 4: 3, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1} -> 9 cuvinte unice
+#{'this': 1, 'is': 2, 'a': 3, 'test': 4, 'to': 5, 'see': 6, 'if': 7, 'will': 8, 'work': 9}
 def bow(sentence, words, show_details=True):
     # tokenize the pattern
     sentence_words = clean_up_sentence(sentence)
-    # bag of words - matrix of N words, vocabulary matrix
+    # bag of words - array of N words, vocabulary matrix
     bag = [0] * len(words)
     for s in sentence_words:
         for i, w in enumerate(words):
@@ -167,12 +171,14 @@ def predict_class(sentence, model):
     results = [[i, r] for i, r in enumerate(res) if r > ERROR_THRESHOLD]
     # sort by strength of probability
     results.sort(key=lambda x: x[1], reverse=True)
+   # print(results)
     return_list = []
     for r in results:
         return_list.append({"intent": classes[r[0]], "probability": str(r[1])})
+
     return return_list
 
-
+#preiau un raspuns random din lista cu intentii
 def getResponse(ints, intents_json):
     tag = ints[0]['intent']
     list_of_intents = intents_json['intents']
@@ -381,9 +387,9 @@ def process_text(input, intent, request=None):
         if intent == 'discussion':
             assistant_speaks('Is there a certain topic you would like to discuss?')
             ans = get_audio()
-            print(ans)
+           # print(ans)
             sub_resp, sub_intent = chatbot_response(ans)
-            print(sub_intent)
+           # print(sub_intent)
             if sub_intent == 'no':
                 assistant_speaks('Then how about you tell me more about yourself?')
                 try:
@@ -395,7 +401,7 @@ def process_text(input, intent, request=None):
                     ans = get_audio()
                     if "don't" not in ans or 'no' not in ans:
                         ans = parse_details(ans)
-                        print(ans)
+                       # print(ans)
                         pac_details.fav_activity = ans
                         pac_details.save()
                 if pac_details.fav_movie == '':

@@ -20,7 +20,7 @@
          "context": [""]
         },
         {"tag": "options",
-         "patterns": ["How you could help me?", "What you can do?", "What help you provide?", "How you can be helpful?", "What support is offered"],
+         "patterns": ["How you could help me?", "What you can do?", "What help you provide?", "How you can be helpful?", "What are my options"],
          "responses": ["I can surf the web for you, open applications and execute other commands", "I am here for your needs. I can search the web, play music and open applications"],
          "context": [""]
         },

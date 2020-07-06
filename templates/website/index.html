@@ -1,7 +1,9 @@
 {% load static %}
 {% load auth_extras %}
 {% block head %}
-
+    <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Chelsea+Market&family=Lobster&display=swap" rel="stylesheet">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
@@ -29,7 +31,7 @@
     <!-- Navigation -->
     <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="index.html">Virtual Assistant</a>
+            <a class="navbar-brand" href="{% url 'tutorial:website_index' %}">Virtual Assistant</a>
             <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
                     data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false"
                     aria-label="Toggle navigation">
@@ -74,30 +76,12 @@
                         {% endif %}
 
                     {% endif %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownBlog" data-toggle="dropdown"
-                           aria-haspopup="true" aria-expanded="false">
-                            Blog
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownBlog">
-                            <a class="dropdown-item" href="blog-home-1.html">Blog Home 1</a>
-                            <a class="dropdown-item" href="blog-home-2.html">Blog Home 2</a>
-                            <a class="dropdown-item" href="blog-post.html">Blog Post</a>
-                        </div>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownBlog" data-toggle="dropdown"
-                           aria-haspopup="true" aria-expanded="false">
-                            Other Pages
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownBlog">
-                            <a class="dropdown-item" href="full-width.html">Full Width Page</a>
-                            <a class="dropdown-item" href="sidebar.html">Sidebar Page</a>
-                            <a class="dropdown-item" href="faq.html">FAQ</a>
-                            <a class="dropdown-item" href="404.html">404</a>
-                            <a class="dropdown-item" href="pricing.html">Pricing Table</a>
-                        </div>
-                    </li>
+                    {% if request.user|has_group:"pacient" or request.user|has_group:"admin" %}
+                            <li class="nav-item">
+                                    <a class="nav-item nav-link" href="{% url 'speech_bot:home' %}">Chat Bot</a>
+                            </li>
+                        {% endif %}
+
                 </ul>
             </div>
         </div>
@@ -119,22 +103,22 @@
                 <div class="carousel-item active"
                      style="background-image: url('{% static 'images/img_slideshow_1.jpg' %}')">
                     <div class="carousel-caption d-none d-md-block">
-                        <b><h2>Monitorizare permanenta</h2></b>
-                        <b><p>Sistemul nostru permite verificarea pacientului 24/24</p></b>
+                        <b><h1 style="color:whitesmoke; font-family: 'Chelsea Market', cursive;" >Avem grijă de tine</h1></b>
+                        <b><h4 style="color:whitesmoke;font-family: 'Chelsea Market', cursive;" >Oriunde, oricând, suntem la un click distanță</h4></b>
                     </div>
                 </div>
                 <!-- Slide Two - Set the background image for this slide in the line below -->
                 <div class="carousel-item" style="background-image: url('{% static 'images/img_slideshow_2.jpg' %}')">
                     <div class="carousel-caption d-none d-md-block">
-                        <b><h2 style="color:black ">Eficienta maxima</h2></b>
-                        <b><p style="color:black">Nu ai parte de alarme false</p></b>
+                        <b><h2 style="color:ghostwhite; font-family: 'Chelsea Market', cursive;">Inteligența Artificială este viitorul</h2></b>
+                        <b><h4 style="color:ghostwhite; font-family: 'Chelsea Market', cursive; ">Las-o să facă parte din viața ta !</h4></b>
                     </div>
                 </div>
                 <!-- Slide Three - Set the background image for this slide in the line below -->
                 <div class="carousel-item" style="background-image: url('{% static 'images/img_slideshow_3.jpg' %}')">
                     <div class="carousel-caption d-none d-md-block">
-                        <b><h1 style="color:black">Alerta instant</h1></b>
-                        <b><p style="color:black">Esti alertat in caz ca un senzor este declansat</p></b>
+                        <b><h2 style="color:white; -webkit-text-stroke:0.25px black; font-family: 'Chelsea Market', cursive;">Lasă-te în baza Asistentului Virtual</h2></b>
+                        <b><h4 style="color:white; -webkit-text-stroke: 0.25px black; font-family: 'Chelsea Market', cursive;">El se ajustează special pentru tine</h4></b>
                     </div>
                 </div>
             </div>
@@ -152,152 +136,71 @@
     <!-- Page Content -->
     <div class="container">
 
-        <h1 class="my-4">Welcome to Virtual Assistant</h1>
-
-        <!-- Marketing Icons Section -->
-        <div class="row">
-            <div class="col-lg-4 mb-4">
-                <div class="card h-100">
-                    <h4 class="card-header">Card Title</h4>
-                    <div class="card-body">
-                        <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sapiente esse
-                            necessitatibus neque.</p>
-                    </div>
-                    <div class="card-footer">
-                        <a href="#" class="btn btn-primary">Learn More</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 mb-4">
-                <div class="card h-100">
-                    <h4 class="card-header">Card Title</h4>
-                    <div class="card-body">
-                        <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Reiciendis ipsam
-                            eos, nam perspiciatis natus commodi similique totam consectetur praesentium molestiae atque
-                            exercitationem ut consequuntur, sed eveniet, magni nostrum sint fuga.</p>
-                    </div>
-                    <div class="card-footer">
-                        <a href="#" class="btn btn-primary">Learn More</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 mb-4">
-                <div class="card h-100">
-                    <h4 class="card-header">Card Title</h4>
-                    <div class="card-body">
-                        <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Sapiente esse
-                            necessitatibus neque.</p>
-                    </div>
-                    <div class="card-footer">
-                        <a href="#" class="btn btn-primary">Learn More</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- /.row -->
+        <h1 class="my-4" align="center"  style="font-family: 'Indie Flower', cursive;">Bine ai venit la Asistentul Virtual !</h1>
 
         <!-- Portfolio Section -->
-        <h2>Portfolio Heading</h2>
-
         <div class="row">
             <div class="col-lg-4 col-sm-6 portfolio-item">
                 <div class="card h-100">
-                    <a href="#"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
+                    <a href="#"><img class="card-img-top"  src="{% static 'images/alz.jpg' %}"  alt=""></a>
                     <div class="card-body">
                         <h4 class="card-title">
-                            <a href="#">Project One</a>
+                            <a href="#">Știai că...</a>
                         </h4>
-                        <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet numquam
-                            aspernatur eum quasi sapiente nesciunt? Voluptatibus sit, repellat sequi itaque deserunt,
-                            dolores in, nesciunt, illum tempora ex quae? Nihil, dolorem!</p>
+                        <p class="card-text">Izolarea poate crește riscul de apariție a bolii Alzheimer?</p>
                     </div>
                 </div>
             </div>
             <div class="col-lg-4 col-sm-6 portfolio-item">
                 <div class="card h-100">
-                    <a href="#"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
+                    <a href="#"><img class="card-img-top" src="{% static 'images/lonely.jpg' %}" alt=""></a>
                     <div class="card-body">
                         <h4 class="card-title">
-                            <a href="#">Project Two</a>
+                            <a href="#">Sau că...</a>
                         </h4>
-                        <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam viverra
-                            euismod odio, gravida pellentesque urna varius vitae.</p>
+                        <p class="card-text">Singurătatea e mai periculoasă decât obezitatea și la fel de dăunătoare cât
+                        15 țigări pe zi?</p>
                     </div>
                 </div>
             </div>
             <div class="col-lg-4 col-sm-6 portfolio-item">
                 <div class="card h-100">
-                    <a href="#"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
+                    <a href="#"><img class="card-img-top" src="{% static 'images/heart_dis.jpg' %}" alt=""></a>
                     <div class="card-body">
                         <h4 class="card-title">
-                            <a href="#">Project Three</a>
+                            <a href="#">Dar și că....</a>
                         </h4>
-                        <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos quisquam,
-                            error quod sed cumque, odio distinctio velit nostrum temporibus necessitatibus et facere
-                            atque iure perspiciatis mollitia recusandae vero vel quam!</p>
+                        <p class="card-text">Singurătatea duce la complicații ale inimii?</p>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4 col-sm-6 portfolio-item">
-                <div class="card h-100">
-                    <a href="#"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
-                    <div class="card-body">
-                        <h4 class="card-title">
-                            <a href="#">Project Four</a>
-                        </h4>
-                        <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam viverra
-                            euismod odio, gravida pellentesque urna varius vitae.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-sm-6 portfolio-item">
-                <div class="card h-100">
-                    <a href="#"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
-                    <div class="card-body">
-                        <h4 class="card-title">
-                            <a href="#">Project Five</a>
-                        </h4>
-                        <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam viverra
-                            euismod odio, gravida pellentesque urna varius vitae.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4 col-sm-6 portfolio-item">
-                <div class="card h-100">
-                    <a href="#"><img class="card-img-top" src="http://placehold.it/700x400" alt=""></a>
-                    <div class="card-body">
-                        <h4 class="card-title">
-                            <a href="#">Project Six</a>
-                        </h4>
-                        <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Itaque earum
-                            nostrum suscipit ducimus nihil provident, perferendis rem illo, voluptate atque, sit eius in
-                            voluptates, nemo repellat fugiat excepturi! Nemo, esse.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+
         <!-- /.row -->
 
         <!-- Features Section -->
         <div class="row">
             <div class="col-lg-6">
-                <h2>Modern Business Features</h2>
-                <p>The Modern Business template by Start Bootstrap includes:</p>
+                <h2>Cine suntem și ce facem?</h2>
+                <p>Virtual Assistant este un proiect aflat în primul stadiu de cercetare și dezvoltare capabil să înlăture
+                sentimentul se singurătate al utilizatorului. Lasă grija ta în seama noastră. Oferim servicii speciale
+                pentru cei cu Alzheimer sau cei încercați de depresie și oferim rapoarte detaliate îngrijitorului cu privire
+                la evoluția bolii. Câteva dintre funcțiile cheie sunt următoarele:</p>
                 <ul>
                     <li>
-                        <strong>Bootstrap v4</strong>
+                        <strong>Dialog intuitiv bazat pe concepte de inteligență artificială.</strong>
                     </li>
-                    <li>jQuery</li>
-                    <li>Font Awesome</li>
-                    <li>Working contact form with validation</li>
-                    <li>Unstyled page elements for easy customization</li>
+                    <li>Reîmprospătează-ți memoria adresând întrebări despre orice, iar Virtual Assisntant va reveni cu un răspuns.</li>
+                    <li>Îți recomandă filme în baza filmului preferat</li>
+                    <li>Nu uita nimic și programează-ți evenimentele în Google Calendar</li>
+                    <li>Lasă-ne să te informăm cu știri de actualitate</li>
+                    <li>Spune tot ce ai pe suflet și lasă-ne pe noi să-ți oferim sfaturi competente</li>
+                    <li>Lasă-ne pe noi să căutăm informația inteligent pentru tine !</li>
                 </ul>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis, omnis doloremque non cum id
-                    reprehenderit, quisquam totam aspernatur tempora minima unde aliquid ea culpa sunt. Reiciendis quia
-                    dolorum ducimus unde.</p>
+                <strong><p>P.S Acest proiect nu reprezintă doar lucrarea de licență a mea, ci o soluție la o problemă cu care omenirea începe deja
+                să se confunte ! Voi continua lucrul la acest proiect și după licență și îl voi duce la stadiul de producție</p></strong>
             </div>
             <div class="col-lg-6">
-                <img class="img-fluid rounded" src="http://placehold.it/700x450" alt="">
+                <img class="img-fluid rounded" src="{% static 'images/team.jpg' %}" alt="">
             </div>
         </div>
         <!-- /.row -->
@@ -305,15 +208,35 @@
         <hr>
 
         <!-- Call to Action Section -->
+        {% if request.user|has_group:"tutore" or request.user|has_group:"admin"%}
         <div class="row mb-4">
             <div class="col-md-8">
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Molestias, expedita, saepe, vero rerum
-                    deleniti beatae veniam harum neque nemo praesentium cum alias asperiores commodi.</p>
+                <p>Pentru a începe lucrul cu Asistentul virtual, te rugăm să inserezi un pacient apăsând butonul din lateral</p>
             </div>
             <div class="col-md-4">
-                <a class="btn btn-lg btn-secondary btn-block" href="#">Call to Action</a>
+                <a class="btn btn-lg btn-secondary btn-block" href="{% url 'tutorial:website_update' %}">Începe acum</a>
             </div>
         </div>
+         {% elif request.user|has_group:"pacient"%}
+            <div class="row mb-4">
+            <div class="col-md-8">
+                <p>Asistentul virtual te așteaptă cu zâmbetul pe buze :)</p>
+            </div>
+            <div class="col-md-4">
+                <a class="btn btn-lg btn-secondary btn-block" href="{% url 'speech_bot:home' %}">Începe acum</a>
+            </div>
+        </div>
+            {% else %}
+
+            <div class="row mb-4">
+            <div class="col-md-8">
+                <p>Bună ! Te rugăm să te înregistrezi pentru a putea accesa oricare dintre aceste particularități</p>
+            </div>
+            <div class="col-md-4">
+                <a class="btn btn-lg btn-secondary btn-block" href="{% url 'tutorial:website_registerPage' %}">Începe acum</a>
+            </div>
+            </div>
+        {% endif %}
 
     </div>
     <!-- /.container -->

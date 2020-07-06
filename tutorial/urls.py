@@ -28,6 +28,7 @@ urlpatterns = [
     path('register/', views.registerPage, name='website_registerPage'),
     path('login/', views.loginPage, name='website_loginPage'),
     path('', views.index, name='website_index'),
+    path('index/', views.index, name='website_index'),
     path('logout/', views.logoutPage, name='website_logoutPage'),
     path('mood/', views.MoodFormView, name='website_mood_form'),
     path('api/data/', views.get_data),

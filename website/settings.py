@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'w_ww!=f_q*r!^z$03woxknjgvx$9*p5$pl^5!)55gum3ot!sv7'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['virtual-assistant-licenta.herokuapp.com', '127.0.0.1']
 
 # LOGIN_REDIRECT_URL = '/'
 # LOGOUT_REDIRECT_URL = '/'
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'rest_framework',
     'speech_bot',
     'tutorial',
@@ -46,6 +47,10 @@ INSTALLED_APPS = [
     'jquery',
 
 ]
+GRAPH_MODELS = {
+  'all_applications': True,
+  'group_models': True,
+}
 
 EMAIL_BACKEND ='django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -56,6 +61,7 @@ EMAIL_HOST_PASSWORD = 'C0mputeradmincs22'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware'
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -131,6 +137,8 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATIC_URL = '/static/'
 

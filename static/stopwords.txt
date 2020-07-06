@@ -3,6 +3,9 @@ love
 like
 my
 favorite
+favourite
+yes
+no
 book
 is
 movie

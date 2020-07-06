@@ -1,0 +1,1 @@
+web:  gunicorn PSBD_ULTIMATE.wsgi --log-file -

@@ -39,11 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
     'speech_bot',
     'tutorial',
     'crispy_forms',
-    'jquery',
 
 ]
 GRAPH_MODELS = {

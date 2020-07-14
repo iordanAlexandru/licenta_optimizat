@@ -26,8 +26,8 @@ def thread_loop(request, r):
                     break
                 text = text.lower()
                 print('You: ' + text)
-                if 'alexa' in text:
-                    text_split = text.split('alexa ')
+                if 'emma' in text:
+                    text_split = text.split('emma ')
                     text = text_split[1]
                     res, intent = chatbot_response(text)
                     if res != "":
@@ -40,20 +40,7 @@ def thread_loop(request, r):
 
 @pacient_and_admin_only
 def speech_to_text(request):
-    data = request.POST.get('record')
-
-    # get audio from the microphone
     r = sr.Recognizer()
-    with sr.Microphone() as source:
-        print("(Test) Speak:")
-        audio = r.listen(source)
-    try:
-        output = " " + r.recognize_google(audio)
-    except sr.UnknownValueError:
-        output = "Could not understand audio"
-    except sr.RequestError as e:
-        output = "Could not request results; {0}".format(e)
-    data = output
     threadTalkLoop = threading.Thread(target=thread_loop, kwargs={'request':request, 'r':r})
     threadTalkLoop.start()
     return render(request, 'speech_bot/home_bot.html', {'data': 'See ya later !'})

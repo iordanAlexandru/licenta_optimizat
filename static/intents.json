@@ -49,21 +49,6 @@
          "responses": ["I am here to listen to you. Please tell me your problems?", "Hey ! Don't say that ! I am here to listen to you", "Tell me more about your problems, I am a good listener.","What happened? Please tell me more"],
          "context": [""]
         },
-        {"tag": "hospital_search",
-         "patterns": ["Lookup for hospital", "Searching for hospital to transfer patient", "I want to search hospital data", "Hospital lookup for patient", "Looking up hospital details" ],
-         "responses": ["Please provide hospital name or location"],
-         "context": ["search_hospital_by_params"]
-        },
-        {"tag": "search_hospital_by_params",
-         "patterns": [],
-         "responses": ["Please provide hospital type"],
-         "context": ["search_hospital_by_type"]
-        },
-        {"tag": "search_hospital_by_type",
-         "patterns": [],
-         "responses": ["Loading hospital details"],
-         "context": [""]
-        },
         { "tag": "boredom",
         "patterns": [ "I am bored", "Do you know any fun activities?", "I want to have fun" ],
         "responses": [ "I got your favorite books, wanna take a look?", "Would you like to workout?", "Do you want to make any new friends?" ],
@@ -126,6 +111,16 @@
         },
         { "tag": "popular",
         "patterns": ["Best popular movies", "good popular movie", "popular movies", "any good popular movies", "tell me a good popular movie"],
+        "responses":[""],
+        "context": [" "]
+        },
+        { "tag": "word",
+        "patterns": ["Can you please open word", "can you open microsoft word", "I would like to write some text", "I want to open a text editor", "I would like to open microsoft office word"],
+        "responses":[""],
+        "context": [" "]
+        },
+        { "tag": "firefox",
+        "patterns": ["Can you open the browser", "can you please open mozilla firefox", "I would like open firefox", "please open the browsing application"],
         "responses":[""],
         "context": [" "]
         }

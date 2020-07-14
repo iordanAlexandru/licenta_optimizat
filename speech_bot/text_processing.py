@@ -18,11 +18,13 @@ from textblob import TextBlob
 from textblob import Word
 from fake_useragent import UserAgent
 from nltk.stem import WordNetLemmatizer
+
 lemmatizer = WordNetLemmatizer()
 import pickle
 import numpy as np
 from bs4 import BeautifulSoup
 import os
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 from tensorflow.keras.models import load_model
 
@@ -49,8 +51,8 @@ num = 1
 def assistant_speaks(output):
     global num
     num += 1
-    print("Alexa : ", output)
-    toSpeak = gTTS(text=output, lang='en-US', slow=False)
+    print("Emma : ", output)
+    toSpeak = gTTS(text=output, lang='en-UK', slow=False)
     file = str(num) + ".mp3"
     toSpeak.save(file)
     # mp3_fp = BytesIO()
@@ -100,22 +102,15 @@ def search_web(input):
 
 
 def open_application(input):
-    if "chrome" in input:
-        assistant_speaks("Google Chrome")
-        os.startfile('C:\Program Files (x86)\Google\Chrome\Application\chrome.exe')
-        return
-    elif "firefox" in input or "mozilla" in input:
+    if "firefox" in input or "mozilla" in input:
         assistant_speaks("Opening Mozilla Firefox")
         os.startfile('C:\Program Files\Mozilla Firefox\\firefox.exe')
         return
     elif "word" in input:
         assistant_speaks("Opening Microsoft Word")
-        os.startfile('C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Microsoft Office 2013\\Word 2013.lnk')
+        os.startfile('C:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE')
         return
-    elif "excel" in input:
-        assistant_speaks("Opening Microsoft Excel")
-        os.startfile('C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Microsoft Office 2013\\Excel 2013.lnk')
-        return
+
     else:
         assistant_speaks("Application not available")
         return
@@ -144,10 +139,10 @@ def clean_up_sentence(sentence):
 
 # return bag of words array: 0 or 1 for each word in the bag that exists in the sentence
 # we dont really care what the words mean / the frequency so 0 and 1 is the best for intent recognition
-#forma cuvintelor din bag este urmatoarea:
-#text = "this is a test to see if this test will work is is test a a"
-#{1: 2, 2: 3, 3: 3, 4: 3, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1} -> 9 cuvinte unice
-#{'this': 1, 'is': 2, 'a': 3, 'test': 4, 'to': 5, 'see': 6, 'if': 7, 'will': 8, 'work': 9}
+# forma cuvintelor din bag este urmatoarea:
+# text = "this is a test to see if this test will work is is test a a"
+# {1: 2, 2: 3, 3: 3, 4: 3, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1} -> 9 cuvinte unice
+# {'this': 1, 'is': 2, 'a': 3, 'test': 4, 'to': 5, 'see': 6, 'if': 7, 'will': 8, 'work': 9}
 def bow(sentence, words, show_details=True):
     # tokenize the pattern
     sentence_words = clean_up_sentence(sentence)
@@ -171,14 +166,15 @@ def predict_class(sentence, model):
     results = [[i, r] for i, r in enumerate(res) if r > ERROR_THRESHOLD]
     # sort by strength of probability
     results.sort(key=lambda x: x[1], reverse=True)
-   # print(results)
+    # print(results)
     return_list = []
     for r in results:
         return_list.append({"intent": classes[r[0]], "probability": str(r[1])})
 
     return return_list
 
-#preiau un raspuns random din lista cu intentii
+
+# preiau un raspuns random din lista cu intentii
 def getResponse(ints, intents_json):
     tag = ints[0]['intent']
     list_of_intents = intents_json['intents']
@@ -196,7 +192,7 @@ def chatbot_response(msg):
     return res, intent
 
 
-def get_audio():
+def get_audio_simple():
     r = sr.Recognizer()
     audio = ''
     with sr.Microphone() as source:
@@ -206,14 +202,28 @@ def get_audio():
     try:
         text = r.recognize_google(audio, language='en-US')
         print("You : ", text)
+        return text
+    except:
+        assistant_speaks("Could not understand what you said. Going back to the main module")
+
+
+def get_audio():
+    r = sr.Recognizer()
+    audio = ''
+    with sr.Microphone() as source:
+        print("Listening...")
+        audio = r.listen(source, phrase_time_limit=50)
+    print("Stop.")
+    try:
+        text = r.recognize_google(audio, language='en-UK')
+        print("You : ", text)
         res, intent = chatbot_response(text)
         if intent == 'goodbye':
             assistant_speaks(res)
             sys.exit()
         return text
     except:
-        assistant_speaks("Could not understand your audio, PLease try again!")
-        sys.exit()
+        assistant_speaks("Could not understand what you said. Going back to the main module")
 
 
 def parse_details(ans):
@@ -265,11 +275,15 @@ def parse_movies(genre_id, discover, movieInstance, genre_string):
 
 def process_text(input, intent, request=None):
     try:
+        if intent == 'word':
+            open_application('word')
+        if intent == 'firefox':
+            open_application('firefox')
         if intent == 'youtube':
             assistant_speaks('Sure. Tell me what do you want to search for')
             ans = get_audio()
             result = parse_stopwords(ans)
-            search_web('youtube ' +result)
+            search_web('youtube ' + result)
         if intent == 'knowledge':
             if 'about' in input:
                 parse_text(input, 'about')
@@ -292,7 +306,7 @@ def process_text(input, intent, request=None):
                 string_query = ' '.join(query)
                 result = parse_stopwords(string_query)
                 search_web('google ' + result)
-
+            assistant_speaks('Going back to the main interface')
         movie_list_intents = ['movie', 'horror', 'action', 'comedy', 'popular', 'thriller']
         if intent in movie_list_intents:
             from tmdbv3api import Movie
@@ -315,11 +329,14 @@ def process_text(input, intent, request=None):
             if intent == 'thriller':
                 parse_movies(53, discover, movie, 'thriller')
             if intent == 'movie':
-                assistant_speaks('Do you want a movie recommendation?')
+                assistant_speaks('Do you want a movie recommendation based on your favorite movie?')
                 ans = get_audio()
                 if 'yes' in ans:
-                    pacient = Pacient.objects.get(user=request.user)
-
+                    try:
+                        pacient = Pacient.objects.get(user=request.user)
+                    except:
+                        assistant_speaks('it looks like you have not discussed that with me. '
+                                         'please enter discussion module first')
                     pac_details = PacientDetails.objects.get(pacient=pacient)
                     fav_movie = pac_details.fav_movie
                     search_movie = movie.search(fav_movie)
@@ -334,6 +351,8 @@ def process_text(input, intent, request=None):
                             assistant_speaks(recommendation.title)
                             assistant_speaks(recommendation.overview)
                         cnt += 1
+
+                    assistant_speaks('Exiting movie module')
                 else:
                     assistant_speaks(
                         'I can give you the top movies based on a genre. Just tell me what are you looking for')
@@ -374,22 +393,24 @@ def process_text(input, intent, request=None):
                 if sub_intent == 'yes':
                     assistant_speaks("Go ahead, tell me the location")
                     location = get_audio()
-                    create_event(service, timp_event, name,1, desc, location)
+                    create_event(service, timp_event, name, 1, desc, location)
                 elif sub_intent == 'no':
-                    create_event(service, timp_event, name,1, desc)
+                    create_event(service, timp_event, name, 1, desc)
             elif sub_intent == 'no':
                 create_event(service, timp_event, name)
             assistant_speaks('Event ' + name + ' created.')
+            assistant_speaks('Exiting event module')
         if intent == 'web':
             ans = get_audio()
             result = parse_stopwords(ans)
-            search_web('google '+result)
+            search_web('google ' + result)
+            assistant_speaks('Exiting web module')
         if intent == 'discussion':
             assistant_speaks('Is there a certain topic you would like to discuss?')
             ans = get_audio()
-           # print(ans)
+            # print(ans)
             sub_resp, sub_intent = chatbot_response(ans)
-           # print(sub_intent)
+            # print(sub_intent)
             if sub_intent == 'no':
                 assistant_speaks('Then how about you tell me more about yourself?')
                 try:
@@ -401,7 +422,7 @@ def process_text(input, intent, request=None):
                     ans = get_audio()
                     if "don't" not in ans or 'no' not in ans:
                         ans = parse_details(ans)
-                       # print(ans)
+                        # print(ans)
                         pac_details.fav_activity = ans
                         pac_details.save()
                 if pac_details.fav_movie == '':
@@ -461,7 +482,7 @@ def process_text(input, intent, request=None):
                                 break
                             if blob1.polarity < 0:
                                 assistant_speaks(random.choice(sad_list))
-                                motiv = get_audio()
+                                motiv = get_audio_simple()
                                 pac_pars._negative_problems += motiv + '\n'
                                 pac_pars.contor_mesaje += 1
                                 if pac_pars.contor_mesaje % 3 == 0:
@@ -475,6 +496,7 @@ def process_text(input, intent, request=None):
                                     )
                                 list.append(motiv)
                                 pac_pars.save()
+                                assistant_speaks('Sorry to hear that, please continue')
                             if blob1.polarity > 0.5:
                                 assistant_speaks(random.choice(happy_list))
                             elif blob1.polarity <= 0.5 and blob1.polarity >= 0:
@@ -542,7 +564,13 @@ def process_text(input, intent, request=None):
                     driver.get(clean_links[random_seed])
                     assistant_speaks('I have opened the browser for you. Exiting discussion module')
                 else:
+                    assistant_speaks('Exiting discussion module')
                     return
+            elif sub_intent == 'yes':
+                assistant_speaks('Tell me what do you want to discuss.')
+                ans = get_audio()
+                res, intent = chatbot_response(ans)
+                process_text(ans, intent, request)
 
         if intent == 'news':
             assistant_speaks("Would you like the news on a specific subject?")
@@ -639,7 +667,7 @@ def process_text(input, intent, request=None):
                             if sub_intent == 'yes':
                                 return
                             elif sub_intent == 'no':
-                                assistant_speaks('If you want to find out more, just let me know')
+                                assistant_speaks('If you want to find out more, just let me know. Exiting news module')
                                 break
                     elif 'exit' in ans:
                         break

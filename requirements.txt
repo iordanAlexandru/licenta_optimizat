@@ -17,6 +17,6 @@ requests==2.23.0
 beautifulsoup4==4.9.1
 django_crispy_forms==1.9.1
 django_jsonfield==1.4.0
-djangorestframework==3.11.0
+djangorestframework==3.11.2
 google_api_python_client==1.9.3
 newsapi==0.1.1

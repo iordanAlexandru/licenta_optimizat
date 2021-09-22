@@ -2,7 +2,7 @@ gTTS==2.1.1
 selenium==3.141.0
 SpeechRecognition==3.8.1
 nltk==3.4.5
-Django==3.0.1
+Django==3.1.13
 numpy==1.18.1
 pandas==1.0.3
 wikipedia==1.4.0

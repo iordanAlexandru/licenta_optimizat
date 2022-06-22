@@ -3,7 +3,7 @@ selenium==3.141.0
 SpeechRecognition==3.8.1
 nltk==3.4.5
 Django==3.0.1
-numpy==1.18.1
+numpy==1.22.0
 pandas==1.0.3
 wikipedia==1.4.0
 tmdbv3api==1.6.0
